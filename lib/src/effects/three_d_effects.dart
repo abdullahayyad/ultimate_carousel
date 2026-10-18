@@ -559,3 +559,45 @@ class TunnelCarouselEffect extends CarouselEffect {
     );
   }
 }
+
+/// Neighbours turn away from the viewer as if on the screen of a tilted
+/// tablet, staying edge to edge with the current item.
+class TabletCarouselEffect extends CarouselEffect {
+  /// Creates a tablet effect.
+  const TabletCarouselEffect({
+    this.angle = 0.52,
+    this.perspective = 0.0015,
+    this.shade = 0.2,
+  });
+
+  /// How far a neighbour is turned, in radians.
+  final double angle;
+
+  /// The strength of the 3D perspective.
+  final double perspective;
+
+  /// How dark a neighbour gets, from 0 to 1.
+  final double shade;
+
+  @override
+  bool get shadesItems => shade > 0;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final double c = info.clampedDelta;
+    final double turn = -c * angle;
+    final double half = info.layout.itemMainExtent / 2;
+    // Pull the turned item back towards the current one, so their facing
+    // edges stay together while the turn narrows it.
+    final double pull = half * (1 - math.cos(turn)) * (d < 0 ? 1 : -1);
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..rotateY(turn)
+            ..translate(d * info.layout.slotExtent + pull)
+            ..perspective(perspective))
+          .value,
+      shade: clampDouble(shade, 0, 1) * c.abs(),
+    );
+  }
+}

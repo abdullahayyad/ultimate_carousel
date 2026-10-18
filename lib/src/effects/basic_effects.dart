@@ -448,3 +448,77 @@ class OverlapCarouselEffect extends CarouselEffect {
     );
   }
 }
+
+/// The current item shrinks into the background while the next one slides
+/// in over it at full size.
+class ForegroundToBackgroundCarouselEffect extends CarouselEffect {
+  /// Creates a foreground-to-background effect.
+  const ForegroundToBackgroundCarouselEffect({this.drift = 0.25});
+
+  /// How far the shrinking item drifts with the motion, as a fraction of a
+  /// full slide.
+  final double drift;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => 1;
+
+  @override
+  double paintOrder(CarouselItemInfo info) => info.delta;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final double slot = info.layout.slotExtent;
+    if (d > 0) {
+      return CarouselItemTransform(
+        matrix: Matrix4.translationValues(d * slot, 0, 0),
+      );
+    }
+    if (d <= -1) {
+      return CarouselItemTransform.hidden;
+    }
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(1 + d)
+            ..translate(d * slot * drift))
+          .value,
+    );
+  }
+}
+
+/// The next item grows out of the background while the current one slides
+/// away over it.
+class BackgroundToForegroundCarouselEffect extends CarouselEffect {
+  /// Creates a background-to-foreground effect.
+  const BackgroundToForegroundCarouselEffect({this.drift = 0.25});
+
+  /// How far the growing item drifts with the motion, as a fraction of a
+  /// full slide.
+  final double drift;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => 1;
+
+  @override
+  double paintOrder(CarouselItemInfo info) => info.delta <= 0 ? 1 : -info.delta;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final double slot = info.layout.slotExtent;
+    if (d <= 0) {
+      return CarouselItemTransform(
+        matrix: Matrix4.translationValues(d * slot, 0, 0),
+      );
+    }
+    if (d >= 1) {
+      return CarouselItemTransform.hidden;
+    }
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(1 - d)
+            ..translate(d * slot * drift))
+          .value,
+    );
+  }
+}

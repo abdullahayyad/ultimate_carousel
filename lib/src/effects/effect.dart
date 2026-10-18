@@ -70,6 +70,16 @@ abstract class CarouselEffect {
   const factory CarouselEffect.rotate({double angle, bool fromTop}) =
       RotateCarouselEffect;
 
+  /// The current item shrinks into the background while the next one slides
+  /// in over it.
+  const factory CarouselEffect.foregroundToBackground({double drift}) =
+      ForegroundToBackgroundCarouselEffect;
+
+  /// The next item grows out of the background while the current one slides
+  /// away over it.
+  const factory CarouselEffect.backgroundToForeground({double drift}) =
+      BackgroundToForegroundCarouselEffect;
+
   /// Neighbours shrink, darken and blur, so the current item is in focus.
   const factory CarouselEffect.focus({
     double blur,
@@ -112,6 +122,13 @@ abstract class CarouselEffect {
     double perspective,
     double viewportFraction,
   }) = CoverflowCarouselEffect;
+
+  /// Neighbours turn away as if on the screen of a tilted tablet.
+  const factory CarouselEffect.tablet({
+    double angle,
+    double perspective,
+    double shade,
+  }) = TabletCarouselEffect;
 
   /// Items stand around a turning ring.
   const factory CarouselEffect.ring({

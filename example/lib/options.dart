@@ -89,6 +89,18 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.fade(zoom: 1.15)',
   ),
   EffectOption(
+    'To background',
+    EffectFamily.slides,
+    CarouselEffect.foregroundToBackground(),
+    'CarouselEffect.foregroundToBackground()',
+  ),
+  EffectOption(
+    'To foreground',
+    EffectFamily.slides,
+    CarouselEffect.backgroundToForeground(),
+    'CarouselEffect.backgroundToForeground()',
+  ),
+  EffectOption(
     'Focus',
     EffectFamily.slides,
     CarouselEffect.focus(),
@@ -178,6 +190,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     EffectFamily.threeD,
     CarouselEffect.coverflow(),
     'CarouselEffect.coverflow()',
+  ),
+  EffectOption(
+    'Tablet',
+    EffectFamily.threeD,
+    CarouselEffect.tablet(),
+    'CarouselEffect.tablet()',
   ),
   EffectOption(
     'Ring',
