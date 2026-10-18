@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  latest:
+    name: Latest stable Flutter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          cd example && flutter pub get
+
+      - name: Check formatting
+        id: format
+        continue-on-error: true
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Check that the package can be published
+        run: flutter pub publish --dry-run
+
+      - name: Make a formatting patch
+        if: steps.format.outcome == 'failure'
+        run: |
+          dart format .
+          git diff > format.patch
+          git diff --stat
+
+      - name: Upload the formatting patch
+        if: steps.format.outcome == 'failure'
+        uses: actions/upload-artifact@v7
+        with:
+          name: format-patch
+          path: format.patch
+
+      - name: Fail when the code is not formatted
+        if: steps.format.outcome == 'failure'
+        run: |
+          echo "::error::Some files are not formatted. Run dart format ."
+          exit 1
+
+  oldest:
+    name: Oldest supported Flutter (3.22)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.22.x
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          cd example && flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test

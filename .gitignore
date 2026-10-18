@@ -1,0 +1,26 @@
+# Dart and Flutter
+.dart_tool/
+.packages
+build/
+pubspec.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+coverage/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
+
+# Platform folders made by `flutter create .` in the example
+# (example/web is committed so the live demo keeps its own page title).
+example/android/
+example/ios/
+example/linux/
+example/macos/
+example/windows/
+example/test/
+example/.metadata

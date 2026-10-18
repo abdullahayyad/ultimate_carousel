@@ -1,0 +1,27 @@
+name: ultimate_carousel
+description: >-
+  Every carousel transition in one package: cube, coverflow, 3D ring, wheel,
+  stack, deck, flip, fan, parallax, reveal, with autoplay, looping and indicators.
+version: 0.1.0
+homepage: https://abdullahayyad.github.io/ultimate_carousel/
+repository: https://github.com/abdullahayyad/ultimate_carousel
+issue_tracker: https://github.com/abdullahayyad/ultimate_carousel/issues
+topics:
+  - carousel
+  - slider
+  - animation
+  - transition
+  - page-indicator
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ">=4.0.0 <7.0.0"
+  flutter_test:
+    sdk: flutter

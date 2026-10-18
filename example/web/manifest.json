@@ -1,0 +1,11 @@
+{
+  "name": "ultimate_carousel demo",
+  "short_name": "Carousels",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#12101a",
+  "theme_color": "#6750A4",
+  "description": "Every Flutter carousel transition and page indicator in one package.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false
+}

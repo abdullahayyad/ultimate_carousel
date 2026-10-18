@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Live demo of ultimate_carousel: every Flutter carousel transition and page indicator in one package.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ultimate_carousel · live demo</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { margin: 0; background: #12101a; }
+    .loading {
+      position: fixed; inset: 0; display: flex; align-items: center;
+      justify-content: center; color: #c9c2e8;
+      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading">Loading the carousel gallery…</div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var loading = document.querySelector('.loading');
+      if (loading) loading.remove();
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
