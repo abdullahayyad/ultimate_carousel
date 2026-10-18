@@ -613,6 +613,18 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     _handleSettled();
   }
 
+  void _jumpToPosition(double page) {
+    if (_count == 0 || !page.isFinite) {
+      return;
+    }
+    _cancelAutoPlayTimer();
+    _reason = CarouselPageChangeReason.controller;
+    _position.stop();
+    _animationTarget = null;
+    _position.value = _loop ? page : clampDouble(page, 0, _lastPage);
+    _scheduleAutoPlay();
+  }
+
   void _springTo(double target, double velocity) {
     if ((target - _page).abs() < 1e-6 && velocity.abs() < 1e-6) {
       if (_page != target) {

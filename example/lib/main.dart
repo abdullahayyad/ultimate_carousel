@@ -202,7 +202,9 @@ class _GalleryPageState extends State<GalleryPage> {
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 8),
+        _Scrubber(controller: _controller, count: 12),
+        const SizedBox(height: 16),
         _CodeBox(code: _code),
       ],
     );
@@ -314,6 +316,42 @@ class _GalleryPageState extends State<GalleryPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A slider that moves the carousel by hand, to look at a transition
+/// halfway through.
+class _Scrubber extends StatelessWidget {
+  const _Scrubber({required this.controller, required this.count});
+
+  final UltimateCarouselController controller;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme text = Theme.of(context).textTheme;
+    return Row(
+      children: <Widget>[
+        Text('Scrub', style: text.labelLarge),
+        Expanded(
+          child: AnimatedBuilder(
+            animation: controller,
+            builder: (BuildContext context, Widget? child) {
+              final double value = clampDouble(
+                controller.realPage,
+                0,
+                (count - 1).toDouble(),
+              );
+              return Slider(
+                value: value,
+                max: (count - 1).toDouble(),
+                onChanged: controller.jumpTo,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

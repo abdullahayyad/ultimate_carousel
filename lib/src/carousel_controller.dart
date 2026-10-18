@@ -98,6 +98,22 @@ class UltimateCarouselController extends ChangeNotifier {
     _state?._jumpToIndex(index);
   }
 
+  /// Moves the carousel to [page] on its strip of items, without animating
+  /// and without snapping to an item.
+  ///
+  /// Fractional pages show the transition halfway: 2.5 is halfway between
+  /// the third and the fourth item. This is handy to scrub through an
+  /// effect, or to keep two carousels in step:
+  ///
+  /// ```dart
+  /// first.addListener(() => second.jumpTo(first.page));
+  /// ```
+  ///
+  /// The next drag, autoplay step or animation snaps back to whole items.
+  void jumpTo(double page) {
+    _state?._jumpToPosition(page);
+  }
+
   /// Starts autoplay, using the carousel's `autoPlay` settings.
   void startAutoPlay() {
     _state?._setAutoPlay(true);
