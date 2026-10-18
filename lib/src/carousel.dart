@@ -269,7 +269,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   int _pointersDown = 0;
   bool _hovered = false;
   bool _foreground = true;
-  bool _tickersEnabled = true;
+  bool _reduceMotion = false;
   int _pingPong = 1;
 
   double? _animationTarget;
@@ -352,9 +352,10 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final bool tickersEnabled = TickerMode.of(context);
-    if (tickersEnabled != _tickersEnabled || _autoPlayTimer == null) {
-      _tickersEnabled = tickersEnabled;
+    final bool reduceMotion =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion != _reduceMotion || _autoPlayTimer == null) {
+      _reduceMotion = reduceMotion;
       _scheduleAutoPlay();
     }
   }
@@ -464,7 +465,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       !_dragging &&
       !(widget.autoPlay.pauseOnHover && _hovered) &&
       _foreground &&
-      _tickersEnabled;
+      !_reduceMotion;
 
   void _cancelAutoPlayTimer() {
     _autoPlayTimer?.cancel();
@@ -542,7 +543,8 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     if (!_loop) {
       destination = clampDouble(destination, 0, _lastPage);
     }
-    final Duration effectiveDuration = duration ?? widget.animationDuration;
+    final Duration effectiveDuration =
+        _reduceMotion ? Duration.zero : duration ?? widget.animationDuration;
     if (effectiveDuration == Duration.zero || destination == _page) {
       _position.stop();
       _position.value = destination;
@@ -1186,12 +1188,6 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     );
     child = widget.effect.decorate(context, child, info);
     child = Opacity(opacity: opacity, child: child);
-    final Matrix4? matrix = transform.matrix;
-    child = Transform(
-      alignment: Alignment.center,
-      transform: matrix == null ? Matrix4.identity() : _matrixOnScreen(matrix),
-      child: child,
-    );
     child = IgnorePointer(
       ignoring: opacity <= 0 || !transform.interactive,
       child: child,
@@ -1200,8 +1196,17 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       excluding: opacity <= 0 || !info.isCurrent,
       child: child,
     );
+    // The transform is the outermost layer: a transform does not check its
+    // own bounds when hit testing, so items moved away from their resting
+    // place still receive taps.
+    final Matrix4? matrix = transform.matrix;
+    child = Transform(
+      alignment: Alignment.center,
+      transform: matrix == null ? Matrix4.identity() : _matrixOnScreen(matrix),
+      child: child,
+    );
     return Positioned(
-      key: ValueKey<int>(info.virtualIndex),
+      key: _SlotKey(info.virtualIndex),
       left: center.dx - itemSize.width / 2,
       top: center.dy - itemSize.height / 2,
       width: itemSize.width,
@@ -1290,6 +1295,12 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       ),
     );
   }
+}
+
+/// Identifies an item's slot in the stage. It is a type of its own so it
+/// never matches keys that apps give their items.
+class _SlotKey extends ValueKey<int> {
+  const _SlotKey(super.value);
 }
 
 class _ItemClipper extends CustomClipper<Path> {

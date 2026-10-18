@@ -35,32 +35,35 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze
-        run: flutter analyze
+        run: |
+          set +e
+          flutter analyze > "$RUNNER_TEMP/analyze.txt" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/analyze.txt"
+          if [ $status -ne 0 ]; then
+            python3 .github/scripts/annotate.py analyze "$RUNNER_TEMP/analyze.txt"
+          fi
+          exit $status
 
       - name: Test
-        run: flutter test
+        if: success() || failure()
+        run: |
+          set +e
+          flutter test --file-reporter "json:$RUNNER_TEMP/test-report.json"
+          status=$?
+          if [ $status -ne 0 ]; then
+            python3 .github/scripts/annotate.py tests "$RUNNER_TEMP/test-report.json"
+          fi
+          exit $status
 
       - name: Check that the package can be published
+        if: success() || failure()
         run: flutter pub publish --dry-run
-
-      - name: Make a formatting patch
-        if: steps.format.outcome == 'failure'
-        run: |
-          dart format .
-          git diff > format.patch
-          git diff --stat
-
-      - name: Upload the formatting patch
-        if: steps.format.outcome == 'failure'
-        uses: actions/upload-artifact@v7
-        with:
-          name: format-patch
-          path: format.patch
 
       - name: Fail when the code is not formatted
         if: steps.format.outcome == 'failure'
         run: |
-          echo "::error::Some files are not formatted. Run dart format ."
+          echo "::error title=dart format::Some files are not formatted. Run dart format . or the Format workflow."
           exit 1
 
   oldest:
@@ -81,7 +84,23 @@ jobs:
           cd example && flutter pub get
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: |
+          set +e
+          flutter analyze --no-fatal-infos > "$RUNNER_TEMP/analyze.txt" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/analyze.txt"
+          if [ $status -ne 0 ]; then
+            python3 .github/scripts/annotate.py analyze "$RUNNER_TEMP/analyze.txt"
+          fi
+          exit $status
 
       - name: Test
-        run: flutter test
+        if: success() || failure()
+        run: |
+          set +e
+          flutter test --file-reporter "json:$RUNNER_TEMP/test-report.json"
+          status=$?
+          if [ $status -ne 0 ]; then
+            python3 .github/scripts/annotate.py tests "$RUNNER_TEMP/test-report.json"
+          fi
+          exit $status

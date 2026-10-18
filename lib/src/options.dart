@@ -78,6 +78,9 @@ class CarouselAutoPlay {
   /// Whether autoplay starts when the carousel appears.
   ///
   /// It can be started and stopped later with the carousel's controller.
+  /// Autoplay stays paused while the platform asks apps to reduce motion
+  /// (`MediaQuery.disableAnimations`), and while the app is in the
+  /// background.
   final bool enabled;
 
   /// How long each item stays before the carousel moves on.
