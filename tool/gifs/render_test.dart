@@ -42,6 +42,8 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('helix', CarouselEffect.helix()),
   ('page_turn', CarouselEffect.pageTurn()),
   ('tunnel', CarouselEffect.tunnel()),
+  ('material', CarouselEffect.material()),
+  ('material_hero', CarouselEffect.material(weights: <int>[1, 7, 1])),
   ('deck', CarouselEffect.deck()),
   ('tinder', CarouselEffect.tinder()),
   ('fan', CarouselEffect.fan()),
@@ -52,6 +54,71 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('curtain', CarouselEffect.curtain()),
   ('blinds', CarouselEffect.blinds()),
   ('liquid', CarouselEffect.liquid(followPointer: false)),
+];
+
+const Color _dot = Color(0x55FFFFFF);
+const Color _active = Color(0xFFB794F6);
+
+/// The indicators shown in the indicators animation.
+const List<(String, IndicatorEffect)> gifIndicators =
+    <(String, IndicatorEffect)>[
+  ('worm', IndicatorEffect.worm(dotColor: _dot, activeDotColor: _active)),
+  (
+    'worm(style: WormStyle.thin)',
+    IndicatorEffect.worm(
+      style: WormStyle.thin,
+      dotColor: _dot,
+      activeDotColor: _active,
+    ),
+  ),
+  (
+    'expandingDots',
+    IndicatorEffect.expandingDots(dotColor: _dot, activeDotColor: _active),
+  ),
+  (
+    'jumpingDot',
+    IndicatorEffect.jumpingDot(
+      verticalOffset: 8,
+      dotColor: _dot,
+      activeDotColor: _active,
+    ),
+  ),
+  (
+    'scrollingDots',
+    IndicatorEffect.scrollingDots(dotColor: _dot, activeDotColor: _active),
+  ),
+  ('slide', IndicatorEffect.slide(dotColor: _dot, activeDotColor: _active)),
+  ('scale', IndicatorEffect.scale(dotColor: _dot, activeDotColor: _active)),
+  ('swap', IndicatorEffect.swap(dotColor: _dot, activeDotColor: _active)),
+  (
+    'swap(style: SwapStyle.zRotation)',
+    IndicatorEffect.swap(
+      style: SwapStyle.zRotation,
+      dotColor: _dot,
+      activeDotColor: _active,
+    ),
+  ),
+  (
+    'colorTransition',
+    IndicatorEffect.colorTransition(dotColor: _dot, activeDotColor: _active),
+  ),
+  ('fill', IndicatorEffect.fill(dotColor: _dot, activeDotColor: _active)),
+  (
+    'segments',
+    IndicatorEffect.segments(dotColor: _dot, activeDotColor: _active),
+  ),
+  ('line', IndicatorEffect.line(trackColor: _dot, activeColor: _active)),
+  (
+    'fraction',
+    IndicatorEffect.fraction(
+      style: TextStyle(
+        fontFamily: 'Roboto',
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
 ];
 
 /// The effects in the big animation at the top of the README.
@@ -276,6 +343,75 @@ void main() {
       }
     });
   }
+
+  testWidgets('frames for the indicators', (WidgetTester tester) async {
+    const double rowHeight = 34;
+    final Size size = Size(520, rowHeight * gifIndicators.length + 24);
+    tester.view.physicalSize = Size(800, math.max(size.height, 600));
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await _loadFonts(tester);
+    final Directory folder = Directory('${output.path}/indicators')
+      ..createSync(recursive: true);
+    final GlobalKey key = GlobalKey();
+    final ValueNotifier<double> page = ValueNotifier<double>(0);
+    addTearDown(page.dispose);
+    await tester.pumpWidget(
+      _frame(
+        key,
+        size,
+        ColoredBox(
+          color: _background,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            child: ValueListenableBuilder<double>(
+              valueListenable: page,
+              builder: (BuildContext context, double value, Widget? child) {
+                return Column(
+                  children: <Widget>[
+                    for (final (String name, IndicatorEffect effect)
+                        in gifIndicators)
+                      SizedBox(
+                        height: rowHeight,
+                        child: Row(
+                          children: <Widget>[
+                            SizedBox(
+                              width: 270,
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  fontFamily: 'Roboto',
+                                  color: Color(0xB3FFFFFF),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            CarouselIndicator.value(
+                              page: value,
+                              count: 6,
+                              effect: effect,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    for (int frame = 0; frame < _frameCount; frame++) {
+      page.value = _pageAt(frame);
+      await tester.pump();
+      await _capture(
+        tester,
+        key,
+        File('${folder.path}/${frame.toString().padLeft(4, '0')}.png'),
+      );
+    }
+  });
 
   testWidgets('frames for the hero', (WidgetTester tester) async {
     const int columns = 3;

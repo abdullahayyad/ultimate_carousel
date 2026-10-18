@@ -43,6 +43,8 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('ring tilted', CarouselEffect.ring(tilt: 0.3, faceViewer: true)),
   ('page turn', CarouselEffect.pageTurn()),
   ('tunnel', CarouselEffect.tunnel()),
+  ('material', CarouselEffect.material()),
+  ('material hero', CarouselEffect.material(weights: <int>[1, 7, 1])),
   ('deck', CarouselEffect.deck()),
   ('tinder', CarouselEffect.tinder()),
   ('fan', CarouselEffect.fan()),
@@ -99,9 +101,57 @@ bool _shown(CarouselItemTransform transform) =>
     transform.visible && transform.opacity > 0;
 
 void main() {
+  test('material layout sizes and places items by weight', () {
+    const MaterialCarouselEffect effect = MaterialCarouselEffect(gap: 0);
+    const CarouselLayout layout = CarouselLayout(
+      viewportSize: Size(600, 300),
+      itemSize: Size(300, 300),
+      spacing: 0,
+      itemCount: 6,
+      loop: false,
+      alignment: CarouselAlignment.center,
+      scrollDirection: Axis.horizontal,
+      reversed: false,
+    );
+    (double, double) placement(double delta, double page) {
+      final CarouselItemTransform transform = effect.transform(
+        CarouselItemInfo(
+          delta: delta,
+          index: 0,
+          virtualIndex: 0,
+          page: page,
+          layout: layout,
+        ),
+      );
+      final double center =
+          MatrixUtils.transformPoint(transform.matrix!, Offset.zero).dx + 300;
+      return (center, transform.clipPath!.getBounds().width);
+    }
+
+    // At rest: 300, 200 and 100 pixels wide, side by side from the left.
+    expect(placement(0, 0).$1, closeTo(150, 1e-6));
+    expect(placement(0, 0).$2, closeTo(300, 1e-6));
+    expect(placement(1, 0).$1, closeTo(400, 1e-6));
+    expect(placement(1, 0).$2, closeTo(200, 1e-6));
+    expect(placement(2, 0).$1, closeTo(550, 1e-6));
+    expect(placement(2, 0).$2, closeTo(100, 1e-6));
+
+    // Halfway to the next item, the first one has shrunk to half its size
+    // and the others have grown halfway to the next size.
+    expect(placement(-0.5, 0.5).$2, closeTo(150, 1e-6));
+    expect(placement(0.5, 0.5).$2, closeTo(250, 1e-6));
+    expect(placement(1.5, 0.5).$2, closeTo(150, 1e-6));
+    expect(placement(2.5, 0.5).$2, closeTo(50, 1e-6));
+  });
+
   for (final (String name, CarouselEffect effect) in allEffects) {
     group(name, () {
       test('draws the current item untouched', () {
+        if (effect is MaterialCarouselEffect) {
+          // Material layouts place items from the leading edge themselves;
+          // see the dedicated test below.
+          return;
+        }
         final CarouselItemInfo info = _info(effect, 0);
         final CarouselItemTransform transform = effect.transform(info);
         expect(transform.visible, isTrue);

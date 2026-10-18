@@ -29,6 +29,11 @@ jobs:
           echo "Icon font: $ICON_FONT"
           flutter test tool/gifs/render_test.dart
 
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg > /dev/null
+
       - name: Make GIFs
         run: |
           out="$RUNNER_TEMP/assets"

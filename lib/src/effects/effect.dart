@@ -6,6 +6,7 @@ import '../item.dart';
 import 'basic_effects.dart';
 import 'card_effects.dart';
 import 'custom_effect.dart';
+import 'material_effect.dart';
 import 'reveal_effects.dart';
 import 'three_d_effects.dart';
 
@@ -178,6 +179,18 @@ abstract class CarouselEffect {
     int visibleItems,
     double rise,
   }) = TunnelCarouselEffect;
+
+  // ---------------------------------------------------------------------------
+  // Material 3
+
+  /// The Material 3 carousel layouts (multi-browse, hero, centered hero and
+  /// full screen), picked with [weights].
+  const factory CarouselEffect.material({
+    List<int> weights,
+    double shrinkExtent,
+    double gap,
+    double cornerRadius,
+  }) = MaterialCarouselEffect;
 
   // ---------------------------------------------------------------------------
   // Cards

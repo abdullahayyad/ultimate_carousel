@@ -9,6 +9,9 @@ enum EffectFamily {
   /// Perspective and 3D shapes.
   threeD('3D'),
 
+  /// The Material 3 carousel layouts.
+  material('Material 3'),
+
   /// Decks, piles and fans of cards.
   cards('Cards'),
 
@@ -244,6 +247,24 @@ const List<EffectOption> effectOptions = <EffectOption>[
     EffectFamily.threeD,
     CarouselEffect.tunnel(),
     'CarouselEffect.tunnel()',
+  ),
+  EffectOption(
+    'Multi-browse',
+    EffectFamily.material,
+    CarouselEffect.material(),
+    'CarouselEffect.material()',
+  ),
+  EffectOption(
+    'Hero',
+    EffectFamily.material,
+    CarouselEffect.material(weights: <int>[7, 1]),
+    'CarouselEffect.material(weights: [7, 1])',
+  ),
+  EffectOption(
+    'Centered hero',
+    EffectFamily.material,
+    CarouselEffect.material(weights: <int>[1, 7, 1]),
+    'CarouselEffect.material(weights: [1, 7, 1])',
   ),
   EffectOption(
     'Deck',
