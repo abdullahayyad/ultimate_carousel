@@ -1,0 +1,55 @@
+name: README animations
+
+# Run by hand from the Actions tab after changing an effect. It renders every
+# effect with flutter_test, turns the frames into GIFs and force-pushes them
+# to the readme-assets branch, so they never bloat the main history.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  gifs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Render frames
+        run: |
+          flutter pub get
+          export ROBOTO_FONT="$(find "$FLUTTER_ROOT" -name 'Roboto-Regular.ttf' -print -quit)"
+          export ICON_FONT="$(find "$FLUTTER_ROOT/bin/cache" -name 'MaterialIcons-Regular.otf' -print -quit)"
+          echo "Text font: $ROBOTO_FONT"
+          echo "Icon font: $ICON_FONT"
+          flutter test tool/gifs/render_test.dart
+
+      - name: Make GIFs
+        run: |
+          out="$RUNNER_TEMP/assets"
+          mkdir -p "$out"
+          for dir in build/gif_frames/*/; do
+            name=$(basename "$dir")
+            ffmpeg -y -loglevel error -framerate 24 -i "$dir/%04d.png" \
+              -vf "split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" \
+              -loop 0 "$out/$name.gif"
+          done
+          du -ch "$out"/*.gif | tail -1
+          ls -la "$out"
+
+      - name: Publish to the readme-assets branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$RUNNER_TEMP/assets"
+          git init -q -b readme-assets
+          git config user.name "Abdullah Ayyad"
+          git config user.email "ab.ayyad@gmail.com"
+          git add .
+          git commit -q -m "README animations"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" readme-assets
