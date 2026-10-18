@@ -34,7 +34,8 @@ void main() {
     expect(find.text('3'), findsNothing);
   });
 
-  testWidgets('a long drag moves to the next item', (WidgetTester tester) async {
+  testWidgets('a long drag moves to the next item',
+      (WidgetTester tester) async {
     final List<(int, CarouselPageChangeReason)> changes =
         <(int, CarouselPageChangeReason)>[];
     final UltimateCarouselController controller = UltimateCarouselController();
@@ -356,7 +357,8 @@ void main() {
   });
 
   testWidgets('handles zero and one item', (WidgetTester tester) async {
-    await tester.pumpWidget(_host(UltimateCarousel(children: const <Widget>[])));
+    await tester
+        .pumpWidget(_host(UltimateCarousel(children: const <Widget>[])));
     expect(tester.takeException(), isNull);
 
     final UltimateCarouselController controller = UltimateCarouselController();

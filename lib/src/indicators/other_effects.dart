@@ -73,8 +73,8 @@ class LineIndicatorEffect extends IndicatorEffect {
     }
 
     if (segment.wraps) {
-      paintWithOpacity(canvas, size, 1 - segment.t,
-          () => drawAt(segment.from.toDouble()));
+      paintWithOpacity(
+          canvas, size, 1 - segment.t, () => drawAt(segment.from.toDouble()));
       paintWithOpacity(
           canvas, size, segment.t, () => drawAt(segment.to.toDouble()));
     } else {

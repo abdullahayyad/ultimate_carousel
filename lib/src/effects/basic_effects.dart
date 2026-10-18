@@ -69,7 +69,8 @@ class FadeCarouselEffect extends CarouselEffect {
       return CarouselItemTransform(opacity: crossFade ? 1 + d : 1);
     }
     return CarouselItemTransform(
-      matrix: zoom == 1 ? null : (ItemMatrix()..scale(1 + (zoom - 1) * d)).value,
+      matrix:
+          zoom == 1 ? null : (ItemMatrix()..scale(1 + (zoom - 1) * d)).value,
       opacity: 1 - d,
     );
   }
@@ -202,8 +203,7 @@ class DepthCarouselEffect extends CarouselEffect {
   int? itemsPerSide(CarouselLayout layout) => 1;
 
   @override
-  double paintOrder(CarouselItemInfo info) =>
-      info.delta <= 0 ? 1 : -info.delta;
+  double paintOrder(CarouselItemInfo info) => info.delta <= 0 ? 1 : -info.delta;
 
   @override
   CarouselItemTransform transform(CarouselItemInfo info) {
@@ -437,8 +437,8 @@ class OverlapCarouselEffect extends CarouselEffect {
     final double c = info.clampedDelta;
     final double rest = d - c;
     final double step = _step(info.layout);
-    final double scale = _lerp(1, sideScale, c.abs()) *
-        (1 - 0.06 * math.min(rest.abs(), 4.0));
+    final double scale =
+        _lerp(1, sideScale, c.abs()) * (1 - 0.06 * math.min(rest.abs(), 4.0));
     return CarouselItemTransform(
       matrix: (ItemMatrix()
             ..scale(scale)

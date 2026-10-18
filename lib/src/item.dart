@@ -315,7 +315,8 @@ class CarouselParallax extends StatelessWidget {
       return child;
     }
     final CarouselLayout layout = info.layout;
-    final double shift = -info.clampedDelta * layout.itemMainExtent * amount / 2;
+    final double shift =
+        -info.clampedDelta * layout.itemMainExtent * amount / 2;
     final bool horizontal = layout.scrollDirection == Axis.horizontal;
     final double signed = layout.reversed ? -shift : shift;
     final Offset offset = horizontal ? Offset(signed, 0) : Offset(0, signed);

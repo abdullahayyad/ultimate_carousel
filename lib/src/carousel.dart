@@ -345,8 +345,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     _reportedIndex = _currentIndex;
     _autoPlayRunning = widget.autoPlay.enabled;
     WidgetsBinding.instance.addObserver(this);
-    final AppLifecycleState? lifecycle =
-        WidgetsBinding.instance.lifecycleState;
+    final AppLifecycleState? lifecycle = WidgetsBinding.instance.lifecycleState;
     _foreground = lifecycle == null || lifecycle == AppLifecycleState.resumed;
   }
 
@@ -670,7 +669,8 @@ class _UltimateCarouselState extends State<UltimateCarousel>
         final double projected =
             FrictionSimulation(0.135, page, velocity).finalX;
         if (velocity > 0) {
-          target = math.max(projected.roundToDouble(), page.floorToDouble() + 1);
+          target =
+              math.max(projected.roundToDouble(), page.floorToDouble() + 1);
         } else if (velocity < 0) {
           target = math.min(projected.roundToDouble(), page.ceilToDouble() - 1);
         } else {
@@ -719,8 +719,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     }
     final double overscroll = raw < 0 ? -raw : raw - _lastPage;
     const double limit = 0.6;
-    final double damped =
-        (1 - 1 / (overscroll * 0.55 / limit + 1)) * limit;
+    final double damped = (1 - 1 / (overscroll * 0.55 / limit + 1)) * limit;
     return raw < 0 ? -damped : _lastPage + damped;
   }
 
@@ -733,9 +732,8 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     }
     if (widget.scrollDirection == Axis.horizontal) {
       return <Type, GestureRecognizerFactory>{
-        HorizontalDragGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<
-                HorizontalDragGestureRecognizer>(
+        HorizontalDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<
+            HorizontalDragGestureRecognizer>(
           () => HorizontalDragGestureRecognizer(
             debugOwner: this,
             supportedDevices: widget.dragDevices,
@@ -795,7 +793,8 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   void _handleDragEnd(DragEndDetails details) {
     _dragging = false;
     final double sign = _reversed ? -1 : 1;
-    final double velocity = -(details.primaryVelocity ?? 0) / _dragExtent * sign;
+    final double velocity =
+        -(details.primaryVelocity ?? 0) / _dragExtent * sign;
     _settle(velocity);
   }
 
@@ -820,7 +819,8 @@ class _UltimateCarouselState extends State<UltimateCarousel>
         : Size(layout.viewportCrossExtent, layout.viewportMainExtent);
     final Offset fromCenter =
         localPosition - Offset(screenSize.width / 2, screenSize.height / 2);
-    final Offset inCarousel = MatrixUtils.transformPoint(_toCarousel, fromCenter);
+    final Offset inCarousel =
+        MatrixUtils.transformPoint(_toCarousel, fromCenter);
     _focalPoint = Offset(
       clampDouble(inCarousel.dx / layout.viewportMainExtent + 0.5, 0, 1),
       clampDouble(inCarousel.dy / layout.viewportCrossExtent + 0.5, 0, 1),
@@ -854,7 +854,9 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   }
 
   void _handlePointerSignal(PointerSignalEvent event) {
-    if (!widget.enableMouseWheel || event is! PointerScrollEvent || _count < 2) {
+    if (!widget.enableMouseWheel ||
+        event is! PointerScrollEvent ||
+        _count < 2) {
       return;
     }
     double delta;
@@ -1176,9 +1178,8 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     );
     child = GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: tappable
-          ? () => _handleItemTap(info.virtualIndex, info.index)
-          : null,
+      onTap:
+          tappable ? () => _handleItemTap(info.virtualIndex, info.index) : null,
       child: child,
     );
     if (widget.effect.shadesItems) {
@@ -1278,12 +1279,10 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     final int index = _currentIndex;
     final bool canGoNext = _count > 1 && (_loop || index < _count - 1);
     final bool canGoBack = _count > 1 && (_loop || index > 0);
-    final VoidCallback? next = canGoNext
-        ? () => _step(1, CarouselPageChangeReason.user)
-        : null;
-    final VoidCallback? previous = canGoBack
-        ? () => _step(-1, CarouselPageChangeReason.user)
-        : null;
+    final VoidCallback? next =
+        canGoNext ? () => _step(1, CarouselPageChangeReason.user) : null;
+    final VoidCallback? previous =
+        canGoBack ? () => _step(-1, CarouselPageChangeReason.user) : null;
     // Swiping content towards the left shows the item on the right.
     final VoidCallback? towardsStart = _reversed ? previous : next;
     final VoidCallback? towardsEnd = _reversed ? next : previous;

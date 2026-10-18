@@ -303,8 +303,7 @@ abstract class CarouselEffect {
 
   /// How far, in logical pixels along the scroll direction, a drag must go
   /// to move by one item.
-  double dragExtent(CarouselLayout layout) =>
-      math.max(layout.slotExtent, 1.0);
+  double dragExtent(CarouselLayout layout) => math.max(layout.slotExtent, 1.0);
 
   /// The paint order of an item: items with larger values are drawn on top.
   ///

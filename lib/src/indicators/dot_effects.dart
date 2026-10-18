@@ -87,7 +87,9 @@ abstract class DotIndicatorEffect extends IndicatorEffect {
   @override
   Size calculateSize(int count) {
     return Size(
-      count * dotWidth + math.max(0, count - 1) * spacing + 2 * horizontalPadding,
+      count * dotWidth +
+          math.max(0, count - 1) * spacing +
+          2 * horizontalPadding,
       dotHeight + 2 * verticalPadding,
     );
   }
@@ -112,7 +114,8 @@ abstract class DotIndicatorEffect extends IndicatorEffect {
     ..isAntiAlias = true;
 
   /// A dot-shaped rounded rectangle with its center at [center].
-  RRect dotAt(Offset center, {double scale = 1, double? width, double? height}) {
+  RRect dotAt(Offset center,
+      {double scale = 1, double? width, double? height}) {
     final double w = (width ?? dotWidth) * scale;
     final double h = (height ?? dotHeight) * scale;
     return RRect.fromRectAndRadius(
@@ -162,7 +165,8 @@ class WormIndicatorEffect extends DotIndicatorEffect {
   bool get _under =>
       style == WormStyle.underground || style == WormStyle.thinUnderground;
 
-  bool get _thin => style == WormStyle.thin || style == WormStyle.thinUnderground;
+  bool get _thin =>
+      style == WormStyle.thin || style == WormStyle.thinUnderground;
 
   void _paintWorm(Canvas canvas, Size size, int from, double t) {
     final double head = math.min(t, 0.5) * 2;
@@ -364,10 +368,12 @@ class ScrollingDotsIndicatorEffect extends DotIndicatorEffect {
   int _visible(int count) => math.max(1, math.min(count, maxVisibleDots));
 
   @override
-  double get horizontalPadding => dotWidth * (math.max(1.0, activeDotScale) - 1) / 2;
+  double get horizontalPadding =>
+      dotWidth * (math.max(1.0, activeDotScale) - 1) / 2;
 
   @override
-  double get verticalPadding => dotHeight * (math.max(1.0, activeDotScale) - 1) / 2;
+  double get verticalPadding =>
+      dotHeight * (math.max(1.0, activeDotScale) - 1) / 2;
 
   @override
   Size calculateSize(int count) => super.calculateSize(_visible(count));
@@ -438,9 +444,9 @@ class ScrollingDotsIndicatorEffect extends DotIndicatorEffect {
   @override
   int? hitTest(Offset position, Size size, double page, int count) {
     final double start = _windowStart(page.roundToDouble(), count);
-    final int index = (start +
-            (position.dx - horizontalPadding + spacing / 2) / step)
-        .floor();
+    final int index =
+        (start + (position.dx - horizontalPadding + spacing / 2) / step)
+            .floor();
     return index >= 0 && index < count ? index : null;
   }
 }
@@ -564,7 +570,8 @@ class SwapIndicatorEffect extends DotIndicatorEffect {
         SwapStyle.zRotation => step / 2,
       };
 
-  void _paintSwap(Canvas canvas, Size size, int count, int from, int to, double t) {
+  void _paintSwap(
+      Canvas canvas, Size size, int count, int from, int to, double t) {
     final Paint paint = dotPaint;
     for (int i = 0; i < count; i++) {
       if (i != from && i != to) {
@@ -692,7 +699,8 @@ class FillIndicatorEffect extends DotIndicatorEffect {
       }
       canvas.save();
       canvas.clipRect(
-        Rect.fromLTRB(dot.left, dot.top, dot.left + dot.width * fill, dot.bottom),
+        Rect.fromLTRB(
+            dot.left, dot.top, dot.left + dot.width * fill, dot.bottom),
       );
       canvas.drawRRect(dot, active);
       canvas.restore();

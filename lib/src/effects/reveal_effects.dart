@@ -148,7 +148,8 @@ class BlindsCarouselEffect extends RevealCarouselEffect {
 /// follows the finger.
 class LiquidCarouselEffect extends RevealCarouselEffect {
   /// Creates a liquid swipe.
-  const LiquidCarouselEffect({this.waveHeight = 0.32, this.followPointer = true});
+  const LiquidCarouselEffect(
+      {this.waveHeight = 0.32, this.followPointer = true});
 
   /// The height of the wave at the start of the swipe, as a fraction of the
   /// item's height.
@@ -171,7 +172,8 @@ class LiquidCarouselEffect extends RevealCarouselEffect {
     // The flat band that has already filled in grows slowly at first and
     // fast at the end, while the bulge in front of it grows and widens.
     final double band = width * p * p;
-    final double bulge = width * math.sin(p * math.pi / 2) * 0.55 + 12 * (1 - p);
+    final double bulge =
+        width * math.sin(p * math.pi / 2) * 0.55 + 12 * (1 - p);
     final double halfHeight =
         height * (waveHeight + (1.2 - waveHeight) * p * p) / 2 + 24 * (1 - p);
     final double base = right - band;
