@@ -196,3 +196,134 @@ class FanCarouselEffect extends CarouselEffect {
     );
   }
 }
+
+/// Items sit on a curve, like a smile or a rainbow, and travel along it.
+class ArcCarouselEffect extends CarouselEffect {
+  /// Creates an arc.
+  const ArcCarouselEffect({
+    this.radius = 3,
+    this.upward = true,
+    this.tilt = true,
+    this.sideScale = 0.9,
+    this.viewportFraction = 0.42,
+  });
+
+  /// The radius of the curve, as a multiple of an item's width.
+  final double radius;
+
+  /// Whether the curve bends up at the ends like a smile; otherwise it bends
+  /// down like a rainbow.
+  final bool upward;
+
+  /// Whether items lean along the curve instead of staying upright.
+  final bool tilt;
+
+  /// The scale of the direct neighbours.
+  final double sideScale;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  double _radius(CarouselLayout layout) =>
+      math.max(1.0, layout.itemMainExtent * radius);
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) {
+    final double slot = math.max(layout.slotExtent, 1.0);
+    return math.min(16, (layout.viewportMainExtent / slot).ceil() + 1);
+  }
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double r = _radius(info.layout);
+    final double angle = info.delta * info.layout.slotExtent / r;
+    if (angle.abs() >= math.pi / 2) {
+      return CarouselItemTransform.hidden;
+    }
+    final double turn = upward ? -angle : angle;
+    final ItemMatrix matrix = ItemMatrix()
+      ..scale(_lerp(1, sideScale, info.clampedDelta.abs()));
+    if (!tilt) {
+      matrix.rotateZ(-turn);
+    }
+    matrix.rotateZ(turn, pivot: Offset(0, upward ? -r : r));
+    return CarouselItemTransform(matrix: matrix.value);
+  }
+}
+
+/// A messy pile of photos: each item lies at its own angle and the top one
+/// straightens up before it is tossed aside.
+class ScatterCarouselEffect extends CarouselEffect {
+  /// Creates a scattered pile.
+  const ScatterCarouselEffect({
+    this.maxAngle = 0.22,
+    this.spread = 0.06,
+    this.visibleCards = 4,
+    this.viewportFraction = 0.72,
+  });
+
+  /// The largest angle an item in the pile lies at, in radians.
+  final double maxAngle;
+
+  /// How far items in the pile are pushed off center, as a fraction of their
+  /// size.
+  final double spread;
+
+  /// How many items show under the top one.
+  final int visibleCards;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => math.max(1, visibleCards) + 1;
+
+  @override
+  double paintOrder(CarouselItemInfo info) =>
+      info.delta <= 0 ? 1 - info.delta : -info.delta;
+
+  /// A repeatable pseudo-random number between -1 and 1 for an item.
+  static double _noise(int index, int salt) {
+    final double x = math.sin(index * 12.9898 + salt * 78.233) * 43758.5453;
+    return (x - x.floorToDouble()) * 2 - 1;
+  }
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final int cards = math.max(1, visibleCards);
+    if (d <= -1 || d > cards + 1) {
+      return CarouselItemTransform.hidden;
+    }
+    final CarouselLayout layout = info.layout;
+    if (d <= 0) {
+      return CarouselItemTransform(
+        matrix: (ItemMatrix()
+              ..rotateZ(d * maxAngle * 1.5)
+              ..translate(
+                d * (layout.slotExtent + layout.itemMainExtent * 0.3),
+                -d * layout.itemCrossExtent * 0.05,
+              ))
+            .value,
+      );
+    }
+    final double pose = clampDouble(d, 0, 1);
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(1 - 0.03 * math.min(d, cards.toDouble()))
+            ..rotateZ(_noise(info.index, 1) * maxAngle * pose)
+            ..translate(
+              _noise(info.index, 2) * spread * layout.itemMainExtent * pose,
+              _noise(info.index, 3) * spread * layout.itemCrossExtent * pose,
+            ))
+          .value,
+      opacity: clampDouble(cards + 1 - d, 0, 1),
+    );
+  }
+}

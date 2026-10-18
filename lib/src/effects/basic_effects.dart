@@ -44,10 +44,14 @@ class FadeCarouselEffect extends CarouselEffect {
   ///
   /// By default the incoming item fades in over the outgoing one, which
   /// stays solid. With [crossFade] both fade at the same time.
-  const FadeCarouselEffect({this.crossFade = false});
+  const FadeCarouselEffect({this.crossFade = false, this.zoom = 1});
 
   /// Whether the outgoing item fades out while the incoming one fades in.
   final bool crossFade;
+
+  /// The scale the incoming item starts from. Values above 1 make it settle
+  /// into place while it fades in, like a slow camera zoom.
+  final double zoom;
 
   @override
   int? itemsPerSide(CarouselLayout layout) => 1;
@@ -64,7 +68,10 @@ class FadeCarouselEffect extends CarouselEffect {
     if (d <= 0) {
       return CarouselItemTransform(opacity: crossFade ? 1 + d : 1);
     }
-    return CarouselItemTransform(opacity: 1 - d);
+    return CarouselItemTransform(
+      matrix: zoom == 1 ? null : (ItemMatrix()..scale(1 + (zoom - 1) * d)).value,
+      opacity: 1 - d,
+    );
   }
 }
 
@@ -333,6 +340,111 @@ class RotateCarouselEffect extends CarouselEffect {
             )
             ..translate(d * info.layout.slotExtent))
           .value,
+    );
+  }
+}
+
+/// Neighbours shrink, darken and blur, so the current item is in focus.
+class FocusCarouselEffect extends CarouselEffect {
+  /// Creates a focus effect.
+  const FocusCarouselEffect({
+    this.blur = 4,
+    this.sideScale = 0.88,
+    this.shade = 0.25,
+    this.viewportFraction = 0.7,
+  });
+
+  /// The blur radius of a neighbour, in logical pixels.
+  final double blur;
+
+  /// The scale of a neighbour.
+  final double sideScale;
+
+  /// How dark a neighbour is, from 0 to 1.
+  final double shade;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  bool get blursItems => blur > 0;
+
+  @override
+  bool get shadesItems => shade > 0;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double t = info.clampedDelta.abs();
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(_lerp(1, sideScale, t))
+            ..translate(info.delta * info.layout.slotExtent))
+          .value,
+      blur: math.max(0.0, blur) * t,
+      shade: clampDouble(shade, 0, 1) * t,
+    );
+  }
+}
+
+/// Neighbours tuck in behind the current item, smaller and darker.
+class OverlapCarouselEffect extends CarouselEffect {
+  /// Creates an overlap effect.
+  const OverlapCarouselEffect({
+    this.overlap = 0.5,
+    this.sideScale = 0.82,
+    this.shade = 0.3,
+    this.viewportFraction = 0.6,
+  });
+
+  /// How much of a neighbour hides behind the current item, from 0 (side by
+  /// side) to 0.9.
+  final double overlap;
+
+  /// The scale of the direct neighbours.
+  final double sideScale;
+
+  /// How dark the direct neighbours are, from 0 to 1.
+  final double shade;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  bool get shadesItems => shade > 0;
+
+  double _step(CarouselLayout layout) =>
+      math.max(1.0, layout.slotExtent * (1 - clampDouble(overlap, 0, 0.9)));
+
+  @override
+  double dragExtent(CarouselLayout layout) => _step(layout);
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) {
+    final double reach =
+        layout.viewportMainExtent / 2 + layout.itemMainExtent / 2;
+    return math.min(16, (reach / (_step(layout) * 0.6)).ceil() + 1);
+  }
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final double c = info.clampedDelta;
+    final double rest = d - c;
+    final double step = _step(info.layout);
+    final double scale = _lerp(1, sideScale, c.abs()) *
+        (1 - 0.06 * math.min(rest.abs(), 4.0));
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(scale)
+            ..translate(c * step + rest * step * 0.6))
+          .value,
+      shade: clampDouble(c.abs() * shade + rest.abs() * 0.1, 0, 1),
     );
   }
 }

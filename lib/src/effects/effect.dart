@@ -33,7 +33,8 @@ abstract class CarouselEffect {
   const factory CarouselEffect.slide() = SlideCarouselEffect;
 
   /// Items fade into each other in place.
-  const factory CarouselEffect.fade({bool crossFade}) = FadeCarouselEffect;
+  const factory CarouselEffect.fade({bool crossFade, double zoom}) =
+      FadeCarouselEffect;
 
   /// The current item is full size and its neighbours are smaller.
   const factory CarouselEffect.enlarge({
@@ -69,6 +70,22 @@ abstract class CarouselEffect {
   const factory CarouselEffect.rotate({double angle, bool fromTop}) =
       RotateCarouselEffect;
 
+  /// Neighbours shrink, darken and blur, so the current item is in focus.
+  const factory CarouselEffect.focus({
+    double blur,
+    double sideScale,
+    double shade,
+    double viewportFraction,
+  }) = FocusCarouselEffect;
+
+  /// Neighbours tuck in behind the current item.
+  const factory CarouselEffect.overlap({
+    double overlap,
+    double sideScale,
+    double shade,
+    double viewportFraction,
+  }) = OverlapCarouselEffect;
+
   // ---------------------------------------------------------------------------
   // 3D
 
@@ -102,6 +119,7 @@ abstract class CarouselEffect {
     double? radius,
     bool faceViewer,
     bool showBackItems,
+    double tilt,
     double perspective,
     double shade,
     double viewportFraction,
@@ -137,6 +155,13 @@ abstract class CarouselEffect {
   const factory CarouselEffect.pageTurn({double perspective, double shade}) =
       PageTurnCarouselEffect;
 
+  /// Items wait in a line into the distance and fly past when they leave.
+  const factory CarouselEffect.tunnel({
+    double depth,
+    int visibleItems,
+    double rise,
+  }) = TunnelCarouselEffect;
+
   // ---------------------------------------------------------------------------
   // Cards
 
@@ -166,6 +191,23 @@ abstract class CarouselEffect {
     double viewportFraction,
   }) = FanCarouselEffect;
 
+  /// Items sit on a curve and travel along it.
+  const factory CarouselEffect.arc({
+    double radius,
+    bool upward,
+    bool tilt,
+    double sideScale,
+    double viewportFraction,
+  }) = ArcCarouselEffect;
+
+  /// A messy pile of photos whose top one is tossed aside.
+  const factory CarouselEffect.scatter({
+    double maxAngle,
+    double spread,
+    int visibleCards,
+    double viewportFraction,
+  }) = ScatterCarouselEffect;
+
   // ---------------------------------------------------------------------------
   // Reveals
 
@@ -177,6 +219,9 @@ abstract class CarouselEffect {
 
   /// The next item is wiped in from the trailing edge.
   const factory CarouselEffect.wipe() = WipeCarouselEffect;
+
+  /// The next item appears through a gap that opens from the middle.
+  const factory CarouselEffect.curtain() = CurtainCarouselEffect;
 
   /// The next item appears through opening slats.
   const factory CarouselEffect.blinds({int count}) = BlindsCarouselEffect;
@@ -226,6 +271,12 @@ abstract class CarouselEffect {
   /// Shading adds a color filter layer to every item, so effects only turn
   /// it on when they need it.
   bool get shadesItems => false;
+
+  /// Whether [transform] uses `CarouselItemTransform.blur`.
+  ///
+  /// Blurring adds an image filter to every item, so effects only turn it on
+  /// when they need it.
+  bool get blursItems => false;
 
   /// How many items to build on each side of the current one.
   ///

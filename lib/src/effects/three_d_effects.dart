@@ -189,6 +189,7 @@ class RingCarouselEffect extends CarouselEffect {
     this.radius,
     this.faceViewer = false,
     this.showBackItems = false,
+    this.tilt = 0,
     this.perspective = 0.0012,
     this.shade = 0.5,
     this.viewportFraction = 0.5,
@@ -209,6 +210,10 @@ class RingCarouselEffect extends CarouselEffect {
   /// Whether items on the far side of the ring are drawn. Items that face
   /// outwards are seen from behind there, mirrored.
   final bool showBackItems;
+
+  /// How far above the ring the viewer is, in radians. Positive values make
+  /// the far side of the ring rise, like looking down on a carousel ride.
+  final double tilt;
 
   /// The strength of the 3D perspective.
   final double perspective;
@@ -253,12 +258,13 @@ class RingCarouselEffect extends CarouselEffect {
       return CarouselItemTransform.hidden;
     }
     final double r = _radius(info.layout, count);
+    final double back = r * (1 - cos);
     final ItemMatrix matrix = ItemMatrix();
     if (!faceViewer) {
       matrix.rotateY(-theta);
     }
     matrix
-      ..translate(r * sin, 0, r * (1 - cos))
+      ..translate(r * sin, -back * math.sin(tilt), back * math.cos(tilt))
       ..perspective(perspective);
     return CarouselItemTransform(
       matrix: matrix.value,
@@ -496,6 +502,60 @@ class PageTurnCarouselEffect extends CarouselEffect {
             ..perspective(perspective))
           .value,
       shade: strength * -d,
+    );
+  }
+}
+
+/// Items wait in a line that disappears into the distance and fly past the
+/// viewer when they leave.
+class TunnelCarouselEffect extends CarouselEffect {
+  /// Creates a tunnel.
+  const TunnelCarouselEffect({
+    this.depth = 0.55,
+    this.visibleItems = 3,
+    this.rise = 0.06,
+  });
+
+  /// How quickly items shrink with distance.
+  final double depth;
+
+  /// How many upcoming items are visible.
+  final int visibleItems;
+
+  /// How far each upcoming item rises towards the horizon, as a fraction of
+  /// the item's height.
+  final double rise;
+
+  int get _visible => math.max(1, visibleItems);
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => _visible + 1;
+
+  @override
+  double dragExtent(CarouselLayout layout) =>
+      math.max(layout.itemMainExtent, 1.0);
+
+  @override
+  double paintOrder(CarouselItemInfo info) => -info.delta;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    if (d <= -1 || d > _visible + 1) {
+      return CarouselItemTransform.hidden;
+    }
+    if (d <= 0) {
+      return CarouselItemTransform(
+        matrix: (ItemMatrix()..scale(1 - d * 1.6)).value,
+        opacity: 1 + d,
+      );
+    }
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(1 / (1 + d * math.max(0.0, depth)))
+            ..translate(0, -d * rise * info.layout.itemCrossExtent))
+          .value,
+      opacity: clampDouble(_visible + 1 - d, 0, 1),
     );
   }
 }

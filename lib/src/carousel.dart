@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -1175,6 +1176,14 @@ class _UltimateCarouselState extends State<UltimateCarousel>
           Color.fromARGB(alpha, 0, 0, 0),
           BlendMode.srcATop,
         ),
+        child: child,
+      );
+    }
+    if (widget.effect.blursItems) {
+      final double sigma = math.max(0.0, transform.blur);
+      child = ImageFiltered(
+        enabled: sigma > 0.05,
+        imageFilter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
         child: child,
       );
     }

@@ -100,6 +100,22 @@ class WipeCarouselEffect extends RevealCarouselEffect {
   }
 }
 
+/// The next item appears through a gap that opens from the middle, like
+/// curtains parting.
+class CurtainCarouselEffect extends RevealCarouselEffect {
+  /// Creates a curtain reveal.
+  const CurtainCarouselEffect();
+
+  @override
+  Path revealPath(CarouselItemInfo info, Size size, double progress) {
+    final double half = size.width * progress / 2;
+    return Path()
+      ..addRect(
+        Rect.fromLTRB(-half, -size.height / 2, half, size.height / 2),
+      );
+  }
+}
+
 /// The next item appears through opening slats, like venetian blinds.
 class BlindsCarouselEffect extends RevealCarouselEffect {
   /// Creates a blinds effect.

@@ -83,6 +83,25 @@ const List<EffectOption> effectOptions = <EffectOption>[
     spacing: 12,
   ),
   EffectOption(
+    'Zoom fade',
+    EffectFamily.slides,
+    CarouselEffect.fade(zoom: 1.15),
+    'CarouselEffect.fade(zoom: 1.15)',
+  ),
+  EffectOption(
+    'Focus',
+    EffectFamily.slides,
+    CarouselEffect.focus(),
+    'CarouselEffect.focus()',
+    spacing: 12,
+  ),
+  EffectOption(
+    'Overlap',
+    EffectFamily.slides,
+    CarouselEffect.overlap(),
+    'CarouselEffect.overlap()',
+  ),
+  EffectOption(
     'Zoom out',
     EffectFamily.slides,
     CarouselEffect.zoomOut(),
@@ -173,6 +192,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.ring(faceViewer: true)',
   ),
   EffectOption(
+    'Ring (tilted)',
+    EffectFamily.threeD,
+    CarouselEffect.ring(faceViewer: true, tilt: 0.35),
+    'CarouselEffect.ring(faceViewer: true, tilt: 0.35)',
+  ),
+  EffectOption(
     'Wheel',
     EffectFamily.threeD,
     CarouselEffect.wheel(),
@@ -197,6 +222,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.pageTurn()',
   ),
   EffectOption(
+    'Tunnel',
+    EffectFamily.threeD,
+    CarouselEffect.tunnel(),
+    'CarouselEffect.tunnel()',
+  ),
+  EffectOption(
     'Deck',
     EffectFamily.cards,
     CarouselEffect.deck(),
@@ -215,6 +246,24 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.fan()',
   ),
   EffectOption(
+    'Arc',
+    EffectFamily.cards,
+    CarouselEffect.arc(),
+    'CarouselEffect.arc()',
+  ),
+  EffectOption(
+    'Rainbow',
+    EffectFamily.cards,
+    CarouselEffect.arc(upward: false),
+    'CarouselEffect.arc(upward: false)',
+  ),
+  EffectOption(
+    'Photo pile',
+    EffectFamily.cards,
+    CarouselEffect.scatter(),
+    'CarouselEffect.scatter()',
+  ),
+  EffectOption(
     'Circle',
     EffectFamily.reveals,
     CarouselEffect.circularReveal(),
@@ -225,6 +274,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     EffectFamily.reveals,
     CarouselEffect.wipe(),
     'CarouselEffect.wipe()',
+  ),
+  EffectOption(
+    'Curtain',
+    EffectFamily.reveals,
+    CarouselEffect.curtain(),
+    'CarouselEffect.curtain()',
   ),
   EffectOption(
     'Blinds',

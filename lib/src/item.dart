@@ -185,6 +185,7 @@ class CarouselItemTransform {
     this.matrix,
     this.opacity = 1,
     this.shade = 0,
+    this.blur = 0,
     this.clipPath,
     this.contentMatrix,
     this.clipContent = false,
@@ -210,6 +211,11 @@ class CarouselItemTransform {
   ///
   /// Only effects whose `shadesItems` is true can shade items.
   final double shade;
+
+  /// Blurs the item, as a blur radius in logical pixels.
+  ///
+  /// Only effects whose `blursItems` is true can blur items.
+  final double blur;
 
   /// Clips the item to this path. `null` means no clipping.
   final Path? clipPath;

@@ -62,5 +62,15 @@ def tests(path):
     emit(f'{len(failed)} failing tests', '\n\n'.join(parts))
 
 
+def publish(path):
+    with open(path, encoding='utf-8', errors='replace') as file:
+        lines = [line.rstrip() for line in file]
+    start = next((i for i, line in enumerate(lines)
+                  if 'validation' in line.lower() or 'warning' in line.lower()),
+                 max(0, len(lines) - 60))
+    emit('pub publish --dry-run', '\n'.join(lines[start:]))
+
+
 if __name__ == '__main__':
-    {'analyze': analyze, 'tests': tests}[sys.argv[1]](sys.argv[2])
+    {'analyze': analyze, 'tests': tests, 'publish': publish}[sys.argv[1]](
+        sys.argv[2])

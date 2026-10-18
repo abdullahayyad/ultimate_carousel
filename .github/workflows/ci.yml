@@ -58,10 +58,19 @@ jobs:
 
       - name: Check that the package can be published
         if: success() || failure()
-        run: flutter pub publish --dry-run
+        run: |
+          set +e
+          flutter pub publish --dry-run > "$RUNNER_TEMP/publish.txt" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/publish.txt"
+          if [ $status -ne 0 ]; then
+            git status --porcelain >> "$RUNNER_TEMP/publish.txt"
+            python3 .github/scripts/annotate.py publish "$RUNNER_TEMP/publish.txt"
+          fi
+          exit $status
 
       - name: Fail when the code is not formatted
-        if: steps.format.outcome == 'failure'
+        if: (success() || failure()) && steps.format.outcome == 'failure'
         run: |
           echo "::error title=dart format::Some files are not formatted. Run dart format . or the Format workflow."
           exit 1
