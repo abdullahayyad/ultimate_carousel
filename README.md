@@ -5,7 +5,7 @@
 [![Live demo](https://img.shields.io/badge/demo-try%20it%20live-7F5AF0)](https://abdullahayyad.github.io/ultimate_carousel/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/abdullahayyad/ultimate_carousel/blob/main/LICENSE)
 
-**Every Flutter carousel transition in one package.** 47 transitions and 15
+**Every Flutter carousel transition in one package.** 51 transitions and 15
 animated page indicators behind a single widget, with no dependencies besides
 Flutter.
 
@@ -81,6 +81,7 @@ Pass any of these as `effect:`. Each one has options; the API docs list them.
 | ![stack](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/stack.gif)<br>`CarouselEffect.stack()` | ![accordion](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/accordion.gif)<br>`CarouselEffect.accordion()` | ![rotate](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/rotate.gif)<br>`CarouselEffect.rotate()` |
 | ![foreground to background](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/foreground_to_background.gif)<br>`CarouselEffect.foregroundToBackground()` | ![background to foreground](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/background_to_foreground.gif)<br>`CarouselEffect.backgroundToForeground()` | ![focus](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/focus.gif)<br>`CarouselEffect.focus()` |
 | ![overlap](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/overlap.gif)<br>`CarouselEffect.overlap()` | ![uncover](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/uncover.gif)<br>`CarouselEffect.uncover()` | ![skew](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/skew.gif)<br>`CarouselEffect.skew()` |
+| ![expo](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/expo.gif)<br>`CarouselEffect.expo()` | | |
 
 Also: `fade(crossFade: true)`, `enlarge(strategy: CarouselEnlargeStrategy.height)`
 and `.zoom`, `zoomIn()`, `rotate(fromTop: true)` and `uncover(parallax: 0)`,
@@ -119,9 +120,11 @@ slide with `alignment: CarouselAlignment.start` and a `viewportFraction` below
 |:-:|:-:|:-:|
 | ![deck](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/deck.gif)<br>`CarouselEffect.deck()` | ![tinder](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/tinder.gif)<br>`CarouselEffect.tinder()` | ![fan](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/fan.gif)<br>`CarouselEffect.fan()` |
 | ![arc](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/arc.gif)<br>`CarouselEffect.arc()` | ![scatter](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/scatter.gif)<br>`CarouselEffect.scatter()` | ![layered](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/layered.gif)<br>`CarouselEffect.layered()` |
+| ![expanding cards](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/expanding_cards.gif)<br>`CarouselEffect.expandingCards()` | | |
 
 Also: `arc(upward: false)` for a rainbow and `arc(tilt: false)` to keep the
-cards upright. `layered(fadeColor: …)` fades the neighbours towards your
+cards upright. Expanding cards show every item at once, so they suit a
+handful of items; tap a narrow card to open it with `animateToTappedItem`. `layered(fadeColor: …)` fades the neighbours towards your
 background color instead of white.
 
 ### Reveals
@@ -130,10 +133,14 @@ background color instead of white.
 |:-:|:-:|:-:|
 | ![circular reveal](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/circular_reveal.gif)<br>`CarouselEffect.circularReveal()` | ![liquid](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/liquid.gif)<br>`CarouselEffect.liquid()` | ![concentric](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/concentric.gif)<br>`CarouselEffect.concentric()` |
 | ![wipe](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/wipe.gif)<br>`CarouselEffect.wipe()` | ![curtain](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/curtain.gif)<br>`CarouselEffect.curtain()` | ![blinds](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/blinds.gif)<br>`CarouselEffect.blinds()` |
-| ![clock](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/clock.gif)<br>`CarouselEffect.clock()` | ![blocks](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/blocks.gif)<br>`CarouselEffect.blocks()` | |
+| ![clock](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/clock.gif)<br>`CarouselEffect.clock()` | ![blocks](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/blocks.gif)<br>`CarouselEffect.blocks()` | ![slicer](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/slicer.gif)<br>`CarouselEffect.slicer()` |
+| ![shutters](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/shutters.gif)<br>`CarouselEffect.shutters()` | | |
 
 `circularReveal(followPointer: true)` and `liquid()` follow the finger, and
-`blocks(random: false)` sweeps the blocks in diagonally.
+`blocks(random: false)` sweeps the blocks in diagonally. The slicer's strips
+can also `shrink` or `turn` away (`slicer(style: CarouselSliceStyle.turn)`).
+Slicer and shutters draw each item once per strip, which is fine for pictures
+but not for heavy widgets.
 
 ### Creative
 
@@ -163,6 +170,25 @@ setting, `translate: ['-20%', 0, -400]` becomes
 `offset: Offset(-0.2, 0), depth: 400`, and `rotate: [0, 100, 0]` becomes
 `rotateY: -100 * pi / 180`: Swiper turns the other way around the X and Y
 axes.
+
+## Marquee
+
+![Cards gliding past like a marquee](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/marquee.gif)
+
+`CarouselAutoPlay.scroll` glides on its own at a steady speed instead of
+moving item by item, like a logo strip or a news ticker. It stops while a
+finger or mouse is on it and glides on when they leave.
+
+```dart
+UltimateCarousel(
+  loop: true,
+  viewportFraction: 0.3,
+  spacing: 12,
+  snapping: CarouselSnapping.none,
+  autoPlay: const CarouselAutoPlay.scroll(speed: 40), // logical pixels a second
+  children: logos,
+)
+```
 
 ## Indicators
 
@@ -194,7 +220,7 @@ carousel. To drive an indicator yourself, for example from a `PageView`, use
 |---|---|---|
 | `effect` | `slide()` | The transition. |
 | `loop` | `false` | Wrap around from the last item to the first. |
-| `autoPlay` | off | `CarouselAutoPlay(interval:, animationDuration:, curve:, reverse:, pauseOnHover:, end:)`. |
+| `autoPlay` | off | `CarouselAutoPlay(interval:, animationDuration:, curve:, reverse:, pauseOnHover:, end:)` moves item by item; `CarouselAutoPlay.scroll(speed:)` glides like a marquee. |
 | `scrollDirection` | horizontal | `Axis.vertical` for vertical carousels. |
 | `reverse` | `false` | The next item comes from the other side. Right-to-left text reverses horizontal carousels on its own. |
 | `viewportFraction` | effect's choice | How much of the carousel one item takes. |
@@ -319,7 +345,8 @@ ideas.
 | [fan_carousel_image_slider](https://pub.dev/packages/fan_carousel_image_slider), [curved_carousel](https://pub.dev/packages/curved_carousel), [flywheel_carousel](https://pub.dev/packages/flywheel_carousel) | fan and arc | MIT, BSD-3-Clause |
 | [turn_page_transition](https://pub.dev/packages/turn_page_transition), [page_turn](https://pub.dev/packages/page_turn) | page turn | BSD-3-Clause, MIT |
 | [shader_transitions](https://pub.dev/packages/shader_transitions), [intro_views_flutter](https://pub.dev/packages/intro_views_flutter) | clock, blocks and circle reveals | MIT |
-| [Swiper](https://swiperjs.com) | creative effect and its demo looks | MIT |
+| [Swiper](https://swiperjs.com) | creative effect and its demo looks; slicer, shutters and expo sliders | MIT |
+| [Splide](https://splidejs.com), [Embla Carousel](https://www.embla-carousel.com) | auto-scroll marquee | MIT |
 | Flutter's `CarouselView` and `ListWheelScrollView` | Material 3 layouts, wheel | BSD-3-Clause |
 
 ## License

@@ -132,6 +132,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.skew()',
   ),
   EffectOption(
+    'Expo',
+    EffectFamily.slides,
+    CarouselEffect.expo(),
+    'CarouselEffect.expo()',
+  ),
+  EffectOption(
     'Zoom out',
     EffectFamily.slides,
     CarouselEffect.zoomOut(),
@@ -324,6 +330,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.layered()',
   ),
   EffectOption(
+    'Expanding cards',
+    EffectFamily.cards,
+    CarouselEffect.expandingCards(),
+    'CarouselEffect.expandingCards()',
+  ),
+  EffectOption(
     'Circle',
     EffectFamily.reveals,
     CarouselEffect.circularReveal(),
@@ -370,6 +382,18 @@ const List<EffectOption> effectOptions = <EffectOption>[
     EffectFamily.reveals,
     CarouselEffect.blocks(),
     'CarouselEffect.blocks()',
+  ),
+  EffectOption(
+    'Slicer',
+    EffectFamily.reveals,
+    CarouselEffect.slicer(),
+    'CarouselEffect.slicer()',
+  ),
+  EffectOption(
+    'Shutters',
+    EffectFamily.reveals,
+    CarouselEffect.shutters(),
+    'CarouselEffect.shutters()',
   ),
   EffectOption(
     'Sink back',

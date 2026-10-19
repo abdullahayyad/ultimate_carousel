@@ -266,6 +266,81 @@ void main() {
     expect(controller.currentIndex, 0);
   });
 
+  testWidgets('scroll autoplay glides at a steady speed', (
+    WidgetTester tester,
+  ) async {
+    final UltimateCarouselController controller = UltimateCarouselController();
+    addTearDown(controller.dispose);
+    final List<CarouselPageChangeReason> reasons =
+        <CarouselPageChangeReason>[];
+    await tester.pumpWidget(
+      _host(
+        UltimateCarousel(
+          controller: controller,
+          loop: true,
+          viewportFraction: 0.5,
+          snapping: CarouselSnapping.none,
+          autoPlay: const CarouselAutoPlay.scroll(speed: 100),
+          onPageChanged: (int index, CarouselPageChangeReason reason) =>
+              reasons.add(reason),
+          children: _slides(6),
+        ),
+      ),
+    );
+    // Items are 200 pixels wide, so 100 pixels a second is half an item.
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    expect(controller.realPage, closeTo(1, 0.05));
+    expect(reasons, isNotEmpty);
+    expect(reasons, everyElement(CarouselPageChangeReason.autoPlay));
+
+    // Pressing stops it where it is, and letting go glides on.
+    final TestGesture gesture = await tester.startGesture(
+      tester.getCenter(find.byType(UltimateCarousel)),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    final double paused = controller.realPage;
+    await tester.pump(const Duration(seconds: 1));
+    expect(controller.realPage, paused);
+    await gesture.up();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(controller.realPage, closeTo(paused + 0.5, 0.05));
+  });
+
+  testWidgets('scroll autoplay can stop at the end of a finite carousel', (
+    WidgetTester tester,
+  ) async {
+    final UltimateCarouselController controller = UltimateCarouselController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      _host(
+        UltimateCarousel(
+          controller: controller,
+          autoPlay: const CarouselAutoPlay.scroll(
+            speed: 400,
+            end: CarouselAutoPlayEnd.stop,
+          ),
+          children: _slides(3),
+        ),
+      ),
+    );
+    // Items are 400 pixels wide, so the glide takes a second per item.
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 3));
+    expect(controller.realPage, 2);
+    expect(controller.isAutoPlaying, isFalse);
+  });
+
+  test('scroll autoplay settings keep their speed', () {
+    const CarouselAutoPlay scroll = CarouselAutoPlay.scroll(speed: 30);
+    expect(scroll.speed, 30);
+    expect(const CarouselAutoPlay().speed, isNull);
+    expect(scroll, isNot(const CarouselAutoPlay()));
+    expect(scroll.copyWith(reverse: true).speed, 30);
+    expect(scroll.copyWith(reverse: true).reverse, isTrue);
+  });
+
   testWidgets('vertical carousels move with vertical drags', (
     WidgetTester tester,
   ) async {

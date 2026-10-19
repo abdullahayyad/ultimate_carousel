@@ -32,6 +32,13 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('uncover', CarouselEffect.uncover()),
   ('uncover, still', CarouselEffect.uncover(parallax: 0, shade: 0)),
   ('skew', CarouselEffect.skew()),
+  ('expo', CarouselEffect.expo()),
+  ('expo, no parallax', CarouselEffect.expo(parallax: 0)),
+  ('expanding cards', CarouselEffect.expandingCards()),
+  ('slicer', CarouselEffect.slicer()),
+  ('slicer shrink', CarouselEffect.slicer(style: CarouselSliceStyle.shrink)),
+  ('slicer turn', CarouselEffect.slicer(style: CarouselSliceStyle.turn)),
+  ('shutters', CarouselEffect.shutters()),
   ('creative', CarouselEffect.creative()),
   ('creative sink back', CreativeCarouselEffect.sinkBack()),
   ('creative drift apart', CreativeCarouselEffect.driftApart()),
@@ -394,6 +401,135 @@ void main() {
     expect(pose(10), isNot(pose(20)));
   });
 
+  test('expanding cards share the width between the panels', () {
+    const ExpandingCardsCarouselEffect effect =
+        ExpandingCardsCarouselEffect(gap: 8);
+    const CarouselLayout layout = CarouselLayout(
+      viewportSize: Size(400, 300),
+      itemSize: Size(240, 300),
+      spacing: 0,
+      itemCount: 4,
+      loop: false,
+      alignment: CarouselAlignment.center,
+      scrollDirection: Axis.horizontal,
+      reversed: false,
+    );
+    (double, double) panel(int index, double page) {
+      final CarouselItemTransform transform = effect.transform(
+        CarouselItemInfo(
+          delta: index - page,
+          index: index,
+          virtualIndex: index,
+          page: page,
+          layout: layout,
+        ),
+      );
+      final double center =
+          MatrixUtils.transformPoint(transform.matrix!, Offset.zero).dx + 200;
+      return (center, transform.clipPath!.getBounds().width);
+    }
+
+    for (final double page in <double>[0, 0.3, 1, 1.5, 3]) {
+      double total = 0;
+      double right = 0;
+      for (int i = 0; i < 4; i++) {
+        final (double center, double width) = panel(i, page);
+        total += width;
+        // Panels sit side by side, a gap apart, in order.
+        expect(center - width / 2, closeTo(i == 0 ? 0 : right + 8, 1e-6));
+        right = center + width / 2;
+      }
+      expect(total + 3 * 8, closeTo(400, 1e-6), reason: 'page $page');
+      expect(right, closeTo(400, 1e-6));
+    }
+    // The current panel is wide; at rest it takes 60% of the room.
+    expect(panel(1, 1).$2, closeTo(0.6 * (400 - 24), 1e-6));
+    expect(panel(0, 1).$2, lessThan(panel(1, 1).$2));
+  });
+
+  test('expo turns neighbours grey and moves their content', () {
+    const ExpoCarouselEffect effect = ExpoCarouselEffect();
+    expect(effect.grayscalesItems, isTrue);
+    final CarouselItemTransform current = effect.transform(_info(effect, 0));
+    final CarouselItemTransform next = effect.transform(_info(effect, 1));
+    expect(current.grayscale, 0);
+    expect(next.grayscale, 1);
+    expect(next.clipContent, isTrue);
+    expect(
+      MatrixUtils.transformPoint(next.contentMatrix!, Offset.zero).dx,
+      lessThan(0),
+    );
+  });
+
+  testWidgets('expo draws neighbours through a grey color filter', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 400,
+            height: 200,
+            child: UltimateCarousel(
+              effect: const CarouselEffect.expo(),
+              children: <Widget>[
+                for (int i = 0; i < 4; i++)
+                  const ColoredBox(color: Color(0xFFE91E63)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final Iterable<ColorFiltered> filters =
+        tester.widgetList<ColorFiltered>(find.byType(ColorFiltered));
+    // The current item and its neighbour each get a filter.
+    expect(filters.length, greaterThanOrEqualTo(2));
+  });
+
+  testWidgets('the slicer cuts the leaving item into moving strips', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    final UltimateCarouselController controller = UltimateCarouselController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 400,
+            height: 200,
+            child: UltimateCarousel(
+              controller: controller,
+              effect: const CarouselEffect.slicer(slices: 4),
+              children: <Widget>[
+                for (int i = 0; i < 3; i++) Text('item $i'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    // Every strip draws the item; screen readers still hear it once.
+    expect(find.text('item 0'), findsNWidgets(4));
+    final Finder announced = find.bySemanticsLabel(RegExp('item 0'));
+    expect(announced, findsOneWidget);
+    expect(
+      RegExp('item 0').allMatches(tester.getSemantics(announced).label).length,
+      1,
+    );
+    double moved() => tester
+        .widgetList<FractionalTranslation>(find.byType(FractionalTranslation))
+        .fold(0.0, (double sum, FractionalTranslation widget) {
+      return sum + widget.translation.distance;
+    });
+    expect(moved(), 0);
+    controller.jumpTo(0.6);
+    await tester.pump();
+    expect(moved(), greaterThan(0));
+    semantics.dispose();
+  });
+
   testWidgets('the layered stack fades neighbours towards its color', (
     WidgetTester tester,
   ) async {
@@ -434,7 +570,8 @@ void main() {
   for (final (String name, CarouselEffect effect) in allEffects) {
     group(name, () {
       test('draws the current item untouched', () {
-        if (effect is MaterialCarouselEffect) {
+        if (effect is MaterialCarouselEffect ||
+            effect is ExpandingCardsCarouselEffect) {
           // Material layouts place items from the leading edge themselves;
           // see the dedicated test below.
           return;

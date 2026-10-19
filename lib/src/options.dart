@@ -59,9 +59,12 @@ enum CarouselSnapping {
 ///   children: slides,
 /// )
 /// ```
+///
+/// [CarouselAutoPlay.scroll] glides on its own instead, like a marquee.
 @immutable
 class CarouselAutoPlay {
-  /// Creates autoplay settings. Autoplay is on unless [enabled] is false.
+  /// Creates autoplay that moves from item to item. Autoplay is on unless
+  /// [enabled] is false.
   const CarouselAutoPlay({
     this.enabled = true,
     this.interval = const Duration(seconds: 3),
@@ -70,6 +73,45 @@ class CarouselAutoPlay {
     this.reverse = false,
     this.pauseOnHover = true,
     this.end = CarouselAutoPlayEnd.rewind,
+  }) : speed = null;
+
+  /// Creates autoplay that glides on its own at a steady [speed], like a
+  /// marquee or a news ticker, instead of moving from item to item.
+  ///
+  /// [speed] is in logical pixels per second. [delay] is how long the
+  /// carousel waits before it glides, at the start and again after the user
+  /// lets go. Pair it with `snapping: CarouselSnapping.none`, so a drag
+  /// leaves the carousel where the user lets go of it.
+  ///
+  /// ```dart
+  /// UltimateCarousel(
+  ///   loop: true,
+  ///   viewportFraction: 0.3,
+  ///   snapping: CarouselSnapping.none,
+  ///   autoPlay: const CarouselAutoPlay.scroll(speed: 40),
+  ///   children: logos,
+  /// )
+  /// ```
+  const CarouselAutoPlay.scroll({
+    double this.speed = 40,
+    this.enabled = true,
+    Duration delay = Duration.zero,
+    this.reverse = false,
+    this.pauseOnHover = true,
+    this.end = CarouselAutoPlayEnd.rewind,
+  })  : interval = delay,
+        animationDuration = const Duration(milliseconds: 800),
+        curve = Curves.easeInOutCubic;
+
+  const CarouselAutoPlay._all({
+    required this.enabled,
+    required this.interval,
+    required this.animationDuration,
+    required this.curve,
+    required this.reverse,
+    required this.pauseOnHover,
+    required this.end,
+    required this.speed,
   });
 
   /// Autoplay switched off. This is the carousel's default.
@@ -84,6 +126,9 @@ class CarouselAutoPlay {
   final bool enabled;
 
   /// How long each item stays before the carousel moves on.
+  ///
+  /// For gliding autoplay ([CarouselAutoPlay.scroll]), how long the carousel
+  /// waits before it glides.
   final Duration interval;
 
   /// How long the move to the next item takes.
@@ -104,6 +149,10 @@ class CarouselAutoPlay {
   /// What happens at the last item of a carousel that does not loop.
   final CarouselAutoPlayEnd end;
 
+  /// The gliding speed in logical pixels per second, or `null` for autoplay
+  /// that moves from item to item.
+  final double? speed;
+
   /// Returns a copy with the given fields replaced.
   CarouselAutoPlay copyWith({
     bool? enabled,
@@ -113,8 +162,9 @@ class CarouselAutoPlay {
     bool? reverse,
     bool? pauseOnHover,
     CarouselAutoPlayEnd? end,
+    double? speed,
   }) {
-    return CarouselAutoPlay(
+    return CarouselAutoPlay._all(
       enabled: enabled ?? this.enabled,
       interval: interval ?? this.interval,
       animationDuration: animationDuration ?? this.animationDuration,
@@ -122,6 +172,7 @@ class CarouselAutoPlay {
       reverse: reverse ?? this.reverse,
       pauseOnHover: pauseOnHover ?? this.pauseOnHover,
       end: end ?? this.end,
+      speed: speed ?? this.speed,
     );
   }
 
@@ -134,7 +185,8 @@ class CarouselAutoPlay {
         other.curve == curve &&
         other.reverse == reverse &&
         other.pauseOnHover == pauseOnHover &&
-        other.end == end;
+        other.end == end &&
+        other.speed == speed;
   }
 
   @override
@@ -146,5 +198,6 @@ class CarouselAutoPlay {
         reverse,
         pauseOnHover,
         end,
+        speed,
       );
 }

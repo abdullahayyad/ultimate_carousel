@@ -43,6 +43,7 @@ class _GalleryPageState extends State<GalleryPage> {
   int _indicatorIndex = 0;
   bool _loop = true;
   bool _autoPlay = false;
+  bool _glide = false;
   bool _vertical = false;
   double? _fraction;
 
@@ -68,6 +69,11 @@ class _GalleryPageState extends State<GalleryPage> {
     }
     if (_autoPlay) {
       code.writeln('  autoPlay: const CarouselAutoPlay(),');
+    }
+    if (_glide) {
+      code
+        ..writeln('  autoPlay: const CarouselAutoPlay.scroll(speed: 60),')
+        ..writeln('  snapping: CarouselSnapping.none,');
     }
     if (_vertical) {
       code.writeln('  scrollDirection: Axis.vertical,');
@@ -140,7 +146,12 @@ class _GalleryPageState extends State<GalleryPage> {
       itemCount: 12,
       effect: _effect.effect,
       loop: _loop,
-      autoPlay: _autoPlay ? const CarouselAutoPlay() : CarouselAutoPlay.off,
+      autoPlay: _glide
+          ? const CarouselAutoPlay.scroll(speed: 60)
+          : _autoPlay
+              ? const CarouselAutoPlay()
+              : CarouselAutoPlay.off,
+      snapping: _glide ? CarouselSnapping.none : CarouselSnapping.singlePage,
       scrollDirection: _vertical ? Axis.vertical : Axis.horizontal,
       viewportFraction: _fraction,
       spacing: _effect.spacing,
@@ -273,7 +284,22 @@ class _GalleryPageState extends State<GalleryPage> {
             SwitchListTile(
               title: const Text('Autoplay'),
               value: _autoPlay,
-              onChanged: (bool value) => setState(() => _autoPlay = value),
+              onChanged: (bool value) => setState(() {
+                _autoPlay = value;
+                if (value) {
+                  _glide = false;
+                }
+              }),
+            ),
+            SwitchListTile(
+              title: const Text('Glide like a marquee'),
+              value: _glide,
+              onChanged: (bool value) => setState(() {
+                _glide = value;
+                if (value) {
+                  _autoPlay = false;
+                }
+              }),
             ),
             SwitchListTile(
               title: const Text('Vertical'),

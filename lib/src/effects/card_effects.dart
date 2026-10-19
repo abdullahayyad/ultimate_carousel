@@ -446,3 +446,107 @@ class ScatterCarouselEffect extends CarouselEffect {
     );
   }
 }
+
+/// Every item shows as a panel side by side across the carousel: the current
+/// one is wide and the others are narrow strips, and moving hands the width
+/// from one panel to the next. This is the expanding cards gallery from the
+/// web.
+///
+/// Items are masked, not squeezed: their content keeps its size and the
+/// rounded mask around it changes. All items are on screen at once, so this
+/// suits a handful of items.
+class ExpandingCardsCarouselEffect extends CarouselEffect {
+  /// Creates expanding cards.
+  const ExpandingCardsCarouselEffect({
+    this.expandedFraction = 0.6,
+    this.gap = 8,
+    this.cornerRadius = 24,
+  });
+
+  /// How much of the carousel the current panel takes, from 0 to 1.
+  final double expandedFraction;
+
+  /// The gap between panels, in logical pixels.
+  final double gap;
+
+  /// The corner radius of the panels.
+  final double cornerRadius;
+
+  @override
+  double get defaultViewportFraction => clampDouble(expandedFraction, 0.05, 1);
+
+  @override
+  bool get uniqueItems => true;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) =>
+      math.max(1, layout.itemCount - 1);
+
+  /// The widths of a wide and a narrow panel.
+  (double, double) _widths(CarouselLayout layout) {
+    final int count = math.max(1, layout.itemCount);
+    final double room = math.max(
+      0.0,
+      layout.viewportMainExtent - (count - 1) * math.max(0.0, gap),
+    );
+    if (count == 1) {
+      return (room, room);
+    }
+    final double wide = room * clampDouble(expandedFraction, 0, 1);
+    return (wide, (room - wide) / (count - 1));
+  }
+
+  @override
+  double dragExtent(CarouselLayout layout) {
+    final (double wide, double narrow) = _widths(layout);
+    return math.max(wide - narrow, 1.0);
+  }
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final CarouselLayout layout = info.layout;
+    final int count = math.max(1, layout.itemCount);
+    final (double wide, double narrow) = _widths(layout);
+    final double page = layout.loop
+        ? info.page % count
+        : clampDouble(info.page, 0, count - 1.0);
+    final int from = page.floor();
+    final double t = page - from;
+    final int to = layout.loop ? (from + 1) % count : math.min(from + 1, count - 1);
+    double widthOf(int index) {
+      double active = 0;
+      if (index == from) {
+        active += 1 - t;
+      }
+      if (index == to && to != from) {
+        active += t;
+      }
+      return narrow + (wide - narrow) * active;
+    }
+
+    final int index = info.index;
+    double left = 0;
+    for (int i = 0; i < index; i++) {
+      left += widthOf(i) + math.max(0.0, gap);
+    }
+    final double width = widthOf(index);
+    if (width <= 0.5) {
+      return CarouselItemTransform.hidden;
+    }
+    final double base = layout.viewportMainExtent / 2 + layout.alignmentOffset;
+    return CarouselItemTransform(
+      matrix: Matrix4.translationValues(left + width / 2 - base, 0, 0),
+      clipPath: Path()
+        ..addRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: Offset.zero,
+              width: width,
+              height: layout.itemCrossExtent,
+            ),
+            Radius.circular(math.min(cornerRadius, width / 2)),
+          ),
+        ),
+    );
+  }
+}

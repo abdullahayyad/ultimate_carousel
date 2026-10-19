@@ -9,6 +9,7 @@ import 'creative_effect.dart';
 import 'custom_effect.dart';
 import 'material_effect.dart';
 import 'reveal_effects.dart';
+import 'slice_effects.dart';
 import 'three_d_effects.dart';
 
 /// A transition between the items of an `UltimateCarousel`.
@@ -106,6 +107,15 @@ abstract class CarouselEffect {
   /// underneath.
   const factory CarouselEffect.uncover({double parallax, double shade}) =
       UncoverCarouselEffect;
+
+  /// Neighbours shrink and turn grey while their content drifts inside
+  /// them, like Swiper's Expo slider.
+  const factory CarouselEffect.expo({
+    double sideScale,
+    double grayscale,
+    double parallax,
+    double viewportFraction,
+  }) = ExpoCarouselEffect;
 
   /// Items lean as they slide and straighten up in the middle.
   const factory CarouselEffect.skew({
@@ -235,6 +245,15 @@ abstract class CarouselEffect {
     double viewportFraction,
   }) = LayeredCarouselEffect;
 
+  /// Every item shows as a panel side by side; the current one is wide and
+  /// the others are narrow strips, like the expanding cards galleries of the
+  /// web.
+  const factory CarouselEffect.expandingCards({
+    double expandedFraction,
+    double gap,
+    double cornerRadius,
+  }) = ExpandingCardsCarouselEffect;
+
   /// A pile of cards whose top card is thrown off to the side with a twist.
   const factory CarouselEffect.tinder({
     int visibleCards,
@@ -304,6 +323,19 @@ abstract class CarouselEffect {
   const factory CarouselEffect.blocks({int columns, int rows, bool random}) =
       BlocksCarouselEffect;
 
+  /// The current item breaks into strips that leave one after another and
+  /// uncover the next item, like Swiper's Slicer slider.
+  const factory CarouselEffect.slicer({
+    int slices,
+    CarouselSliceStyle style,
+    double stagger,
+  }) = SlicerCarouselEffect;
+
+  /// The next item comes in as slats that turn open one after another, like
+  /// Swiper's Shutters slider.
+  const factory CarouselEffect.shutters({int slats, double stagger}) =
+      ShuttersCarouselEffect;
+
   // ---------------------------------------------------------------------------
   // Creative
 
@@ -369,6 +401,12 @@ abstract class CarouselEffect {
   /// Black (the default) darkens items and white washes them out. The
   /// color's own opacity is ignored: the shade amount sets the strength.
   Color get shadeColor => const Color(0xFF000000);
+
+  /// Whether [transform] uses `CarouselItemTransform.grayscale`.
+  ///
+  /// Taking color out adds a color filter layer to every item, so effects
+  /// only turn it on when they need it.
+  bool get grayscalesItems => false;
 
   /// Whether [transform] uses `CarouselItemTransform.blur`.
   ///

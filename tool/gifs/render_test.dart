@@ -32,6 +32,7 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('overlap', CarouselEffect.overlap()),
   ('uncover', CarouselEffect.uncover()),
   ('skew', CarouselEffect.skew()),
+  ('expo', CarouselEffect.expo()),
   ('cube', CarouselEffect.cube()),
   ('cube_inside', CarouselEffect.cube(inside: true)),
   ('flip', CarouselEffect.flip()),
@@ -52,6 +53,7 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('deck', CarouselEffect.deck()),
   ('tinder', CarouselEffect.tinder()),
   ('layered', CarouselEffect.layered()),
+  ('expanding_cards', CarouselEffect.expandingCards()),
   ('fan', CarouselEffect.fan()),
   ('arc', CarouselEffect.arc()),
   ('scatter', CarouselEffect.scatter()),
@@ -63,6 +65,8 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('concentric', CarouselEffect.concentric()),
   ('clock', CarouselEffect.clock()),
   ('blocks', CarouselEffect.blocks()),
+  ('slicer', CarouselEffect.slicer()),
+  ('shutters', CarouselEffect.shutters()),
   ('creative_sink_back', CreativeCarouselEffect.sinkBack()),
   ('creative_drift_apart', CreativeCarouselEffect.driftApart()),
   ('creative_push', CreativeCarouselEffect.push()),
@@ -439,6 +443,50 @@ void main() {
     );
     for (int frame = 0; frame < _frameCount; frame++) {
       page.value = _pageAt(frame);
+      await tester.pump();
+      await _capture(
+        tester,
+        key,
+        File('${folder.path}/${frame.toString().padLeft(4, '0')}.png'),
+      );
+    }
+  });
+
+  testWidgets('frames for the marquee', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await _loadFonts(tester);
+    final Directory folder = Directory('${output.path}/marquee')
+      ..createSync(recursive: true);
+    final UltimateCarouselController controller = UltimateCarouselController();
+    addTearDown(controller.dispose);
+    final GlobalKey key = GlobalKey();
+    await tester.pumpWidget(
+      _frame(
+        key,
+        _tileSize,
+        ColoredBox(
+          color: _background,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 60),
+            child: UltimateCarousel.builder(
+              controller: controller,
+              loop: true,
+              itemCount: 6,
+              viewportFraction: 0.3,
+              spacing: 12,
+              enableKeyboard: false,
+              itemBuilder: (BuildContext context, int index) => _Card(index),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    for (int frame = 0; frame < _frameCount; frame++) {
+      // One lap of the six items at a steady speed, so the GIF loops.
+      controller.jumpTo(6 * frame / _frameCount);
       await tester.pump();
       await _capture(
         tester,

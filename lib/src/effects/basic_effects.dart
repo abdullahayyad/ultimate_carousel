@@ -617,3 +617,57 @@ class SkewCarouselEffect extends CarouselEffect {
     );
   }
 }
+
+/// Neighbours shrink and turn grey while their content drifts inside them,
+/// so the current item stands out in full color, like the Expo slider of
+/// the Swiper web slider.
+class ExpoCarouselEffect extends CarouselEffect {
+  /// Creates an expo effect.
+  const ExpoCarouselEffect({
+    this.sideScale = 0.85,
+    this.grayscale = 1,
+    this.parallax = 0.2,
+    this.viewportFraction = 0.7,
+  });
+
+  /// The scale of the neighbours.
+  final double sideScale;
+
+  /// How grey the neighbours get, from 0 (full color) to 1 (grey).
+  final double grayscale;
+
+  /// How far the content drifts inside the neighbours, as a fraction of an
+  /// item's width. The content zooms in just enough to keep filling the
+  /// item. Use 0 for content with its own rounded corners.
+  final double parallax;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  bool get grayscalesItems => grayscale > 0;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double c = info.clampedDelta;
+    final double drift = clampDouble(parallax, 0, 1);
+    final double width = info.layout.itemMainExtent;
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(_lerp(1, sideScale, c.abs()))
+            ..translate(info.delta * info.layout.slotExtent))
+          .value,
+      contentMatrix: drift == 0
+          ? null
+          : (ItemMatrix()
+                ..scale(1 + drift * c.abs())
+                ..translate(-c * width * drift / 2))
+              .value,
+      clipContent: drift > 0,
+      grayscale: clampDouble(grayscale, 0, 1) * c.abs(),
+    );
+  }
+}

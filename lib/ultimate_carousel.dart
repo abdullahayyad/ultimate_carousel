@@ -23,6 +23,7 @@ export 'src/effects/effect.dart';
 export 'src/effects/item_matrix.dart';
 export 'src/effects/material_effect.dart';
 export 'src/effects/reveal_effects.dart';
+export 'src/effects/slice_effects.dart';
 export 'src/effects/three_d_effects.dart';
 export 'src/indicators/dot_effects.dart';
 export 'src/indicators/indicator.dart';

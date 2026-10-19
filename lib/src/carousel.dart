@@ -267,6 +267,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
 
   Timer? _autoPlayTimer;
   bool _autoPlayRunning = false;
+  bool _gliding = false;
   int _pointersDown = 0;
   bool _hovered = false;
   bool _foreground = true;
@@ -470,9 +471,16 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   void _cancelAutoPlayTimer() {
     _autoPlayTimer?.cancel();
     _autoPlayTimer = null;
+    if (_gliding) {
+      _gliding = false;
+      _position.stop();
+    }
   }
 
   void _scheduleAutoPlay() {
+    if (_gliding && _canAutoPlay) {
+      return;
+    }
     _cancelAutoPlayTimer();
     if (!mounted || !_canAutoPlay || _position.isAnimating) {
       return;
@@ -486,6 +494,10 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       return;
     }
     final CarouselAutoPlay settings = widget.autoPlay;
+    if (settings.speed != null) {
+      _autoGlide(settings.speed!);
+      return;
+    }
     final double current = _page.roundToDouble();
     final int direction = (settings.reverse ? -1 : 1) * _pingPong;
     double target = current + direction;
@@ -507,6 +519,62 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       curve: settings.curve,
       reason: CarouselPageChangeReason.autoPlay,
     );
+  }
+
+  /// Glides at [speed] logical pixels per second until something pauses
+  /// autoplay or a carousel that does not loop reaches its end.
+  void _autoGlide(double speed) {
+    if (_layout == null) {
+      // The speed depends on the item size, which the first layout sets.
+      SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+        if (mounted) {
+          _scheduleAutoPlay();
+        }
+      });
+      return;
+    }
+    final int direction = (widget.autoPlay.reverse ? -1 : 1) * _pingPong;
+    final double velocity = speed / math.max(_dragExtent, 1.0) * direction;
+    if (velocity == 0 || !velocity.isFinite) {
+      return;
+    }
+    double? bound;
+    if (!_loop) {
+      bound = velocity > 0 ? _lastPage : 0;
+      if ((bound - _page) * velocity <= 1e-9) {
+        _glideReachedEnd(direction);
+        return;
+      }
+    }
+    _reason = CarouselPageChangeReason.autoPlay;
+    _animationTarget = null;
+    _gliding = true;
+    _position.animateWith(_GlideSimulation(_page, velocity, bound)).then(
+      (void _) {
+        if (!mounted || !_gliding) {
+          return;
+        }
+        _gliding = false;
+        _glideReachedEnd(direction);
+      },
+    );
+  }
+
+  void _glideReachedEnd(int direction) {
+    switch (widget.autoPlay.end) {
+      case CarouselAutoPlayEnd.rewind:
+        _animateTo(
+          direction > 0 ? 0 : _lastPage,
+          duration: widget.autoPlay.animationDuration,
+          curve: widget.autoPlay.curve,
+          reason: CarouselPageChangeReason.autoPlay,
+        );
+      case CarouselAutoPlayEnd.pingPong:
+        _pingPong = -_pingPong;
+        _scheduleAutoPlay();
+      case CarouselAutoPlayEnd.stop:
+        _autoPlayRunning = false;
+    }
   }
 
   void _setAutoPlay(bool running) {
@@ -1192,6 +1260,14 @@ class _UltimateCarouselState extends State<UltimateCarousel>
         child: child,
       );
     }
+    if (widget.effect.grayscalesItems) {
+      child = ColorFiltered(
+        colorFilter: ColorFilter.matrix(
+          _saturationMatrix(1 - clampDouble(transform.grayscale, 0, 1)),
+        ),
+        child: child,
+      );
+    }
     if (widget.effect.blursItems) {
       final double sigma = math.max(0.0, transform.blur);
       child = ImageFiltered(
@@ -1244,7 +1320,15 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     final Size size = _resolveSize(constraints);
     final CarouselLayout layout = _computeLayout(size);
     _layout = layout;
-    _dragExtent = math.max(1.0, widget.effect.dragExtent(layout));
+    final double dragExtent = math.max(1.0, widget.effect.dragExtent(layout));
+    if (_gliding && dragExtent != _dragExtent) {
+      // Glide on at the same speed in pixels with the new item size.
+      _runOutsideBuild(() {
+        _cancelAutoPlayTimer();
+        _scheduleAutoPlay();
+      });
+    }
+    _dragExtent = dragExtent;
     Widget stage = AnimatedBuilder(
       animation: _position,
       builder: (BuildContext context, Widget? child) =>
@@ -1333,4 +1417,52 @@ class _ItemClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(_ItemClipper oldClipper) => oldClipper.path != path;
+}
+
+/// Moves at a steady [velocity] in pages per second from [start], and stops
+/// at [bound] if there is one.
+class _GlideSimulation extends Simulation {
+  _GlideSimulation(this.start, this.velocity, this.bound);
+
+  final double start;
+  final double velocity;
+  final double? bound;
+
+  @override
+  double x(double time) {
+    final double value = start + velocity * time;
+    final double? end = bound;
+    if (end == null) {
+      return value;
+    }
+    return velocity > 0 ? math.min(value, end) : math.max(value, end);
+  }
+
+  @override
+  double dx(double time) => isDone(time) ? 0 : velocity;
+
+  @override
+  bool isDone(double time) {
+    final double? end = bound;
+    if (end == null) {
+      return false;
+    }
+    final double value = start + velocity * time;
+    return velocity > 0 ? value >= end : value <= end;
+  }
+}
+
+/// A color matrix that keeps [saturation] of the colors, from 0 (grey) to 1
+/// (unchanged), using the usual luminance weights.
+List<double> _saturationMatrix(double saturation) {
+  final double grey = 1 - saturation;
+  final double r = 0.2126 * grey;
+  final double g = 0.7152 * grey;
+  final double b = 0.0722 * grey;
+  return <double>[
+    r + saturation, g, b, 0, 0, //
+    r, g + saturation, b, 0, 0, //
+    r, g, b + saturation, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ];
 }

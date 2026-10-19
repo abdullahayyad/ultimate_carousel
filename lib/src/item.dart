@@ -185,6 +185,7 @@ class CarouselItemTransform {
     this.matrix,
     this.opacity = 1,
     this.shade = 0,
+    this.grayscale = 0,
     this.blur = 0,
     this.clipPath,
     this.contentMatrix,
@@ -212,6 +213,11 @@ class CarouselItemTransform {
   ///
   /// Only effects whose `shadesItems` is true can shade items.
   final double shade;
+
+  /// Takes the color out of the item, from 0 (full color) to 1 (grey).
+  ///
+  /// Only effects whose `grayscalesItems` is true can make items grey.
+  final double grayscale;
 
   /// Blurs the item, as a blur radius in logical pixels.
   ///
