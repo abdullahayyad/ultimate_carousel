@@ -457,8 +457,7 @@ void main() {
       ..createSync(recursive: true);
     final List<UltimateCarouselController> controllers =
         <UltimateCarouselController>[
-      for (int i = 0; i < heroEffects.length; i++)
-        UltimateCarouselController(),
+      for (int i = 0; i < heroEffects.length; i++) UltimateCarouselController(),
     ];
     addTearDown(() {
       for (final UltimateCarouselController controller in controllers) {
