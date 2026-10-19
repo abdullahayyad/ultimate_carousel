@@ -626,7 +626,7 @@ class ExpoCarouselEffect extends CarouselEffect {
   const ExpoCarouselEffect({
     this.sideScale = 0.85,
     this.grayscale = 1,
-    this.parallax = 0.2,
+    this.parallax = 0,
     this.viewportFraction = 0.7,
   });
 
@@ -637,8 +637,9 @@ class ExpoCarouselEffect extends CarouselEffect {
   final double grayscale;
 
   /// How far the content drifts inside the neighbours, as a fraction of an
-  /// item's width. The content zooms in just enough to keep filling the
-  /// item. Use 0 for content with its own rounded corners.
+  /// item's width, for example 0.2. The content zooms in just enough to keep
+  /// filling the item, so this suits full-bleed photos; content with its
+  /// own rounded corners looks best without it.
   final double parallax;
 
   /// The default fraction of the carousel one item takes.

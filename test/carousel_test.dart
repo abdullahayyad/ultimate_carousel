@@ -287,7 +287,7 @@ void main() {
       ),
     );
     // Items are 200 pixels wide, so 100 pixels a second is half an item.
-    await tester.pump();
+    await tester.pump(Duration.zero);
     await tester.pump(const Duration(seconds: 2));
     expect(controller.realPage, closeTo(1, 0.05));
     expect(reasons, isNotEmpty);
@@ -302,7 +302,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(controller.realPage, paused);
     await gesture.up();
-    await tester.pump();
+    await tester.pump(Duration.zero);
     await tester.pump(const Duration(seconds: 1));
     expect(controller.realPage, closeTo(paused + 0.5, 0.05));
   });
@@ -325,7 +325,7 @@ void main() {
       ),
     );
     // Items are 400 pixels wide, so the glide takes a second per item.
-    await tester.pump();
+    await tester.pump(Duration.zero);
     await tester.pump(const Duration(seconds: 3));
     expect(controller.realPage, 2);
     expect(controller.isAutoPlaying, isFalse);

@@ -83,6 +83,9 @@ Pass any of these as `effect:`. Each one has options; the API docs list them.
 | ![overlap](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/overlap.gif)<br>`CarouselEffect.overlap()` | ![uncover](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/uncover.gif)<br>`CarouselEffect.uncover()` | ![skew](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/skew.gif)<br>`CarouselEffect.skew()` |
 | ![expo](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/expo.gif)<br>`CarouselEffect.expo()` | | |
 
+`expo(parallax: 0.2)` also lets full-bleed photos drift inside the side
+items.
+
 Also: `fade(crossFade: true)`, `enlarge(strategy: CarouselEnlargeStrategy.height)`
 and `.zoom`, `zoomIn()`, `rotate(fromTop: true)` and `uncover(parallax: 0)`,
 where the next item waits still underneath.

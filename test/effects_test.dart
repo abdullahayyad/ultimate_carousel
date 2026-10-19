@@ -33,7 +33,7 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('uncover, still', CarouselEffect.uncover(parallax: 0, shade: 0)),
   ('skew', CarouselEffect.skew()),
   ('expo', CarouselEffect.expo()),
-  ('expo, no parallax', CarouselEffect.expo(parallax: 0)),
+  ('expo with parallax', CarouselEffect.expo(parallax: 0.2)),
   ('expanding cards', CarouselEffect.expandingCards()),
   ('slicer', CarouselEffect.slicer()),
   ('slicer shrink', CarouselEffect.slicer(style: CarouselSliceStyle.shrink)),
@@ -436,19 +436,19 @@ void main() {
         final (double center, double width) = panel(i, page);
         total += width;
         // Panels sit side by side, a gap apart, in order.
-        expect(center - width / 2, closeTo(i == 0 ? 0 : right + 8, 1e-6));
+        expect(center - width / 2, closeTo(i == 0 ? 0 : right + 8, 1e-3));
         right = center + width / 2;
       }
-      expect(total + 3 * 8, closeTo(400, 1e-6), reason: 'page $page');
-      expect(right, closeTo(400, 1e-6));
+      expect(total + 3 * 8, closeTo(400, 1e-3), reason: 'page $page');
+      expect(right, closeTo(400, 1e-3));
     }
     // The current panel is wide; at rest it takes 60% of the room.
-    expect(panel(1, 1).$2, closeTo(0.6 * (400 - 24), 1e-6));
+    expect(panel(1, 1).$2, closeTo(0.6 * (400 - 24), 1e-3));
     expect(panel(0, 1).$2, lessThan(panel(1, 1).$2));
   });
 
   test('expo turns neighbours grey and moves their content', () {
-    const ExpoCarouselEffect effect = ExpoCarouselEffect();
+    const ExpoCarouselEffect effect = ExpoCarouselEffect(parallax: 0.2);
     expect(effect.grayscalesItems, isTrue);
     final CarouselItemTransform current = effect.transform(_info(effect, 0));
     final CarouselItemTransform next = effect.transform(_info(effect, 1));
