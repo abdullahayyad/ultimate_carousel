@@ -57,6 +57,47 @@ abstract class IndicatorEffect {
     double verticalOffset,
   }) = JumpingDotIndicatorEffect;
 
+  /// The current dot hops to the next place and shrinks in mid-air, like a
+  /// drop of water.
+  const factory IndicatorEffect.drop({
+    double dotWidth,
+    double dotHeight,
+    double spacing,
+    double radius,
+    Color dotColor,
+    Color activeDotColor,
+    double strokeWidth,
+    PaintingStyle paintStyle,
+    double dropHeight,
+    double dropScale,
+  }) = DropIndicatorEffect;
+
+  /// The current dot slides to the next place and shrinks on the way.
+  const factory IndicatorEffect.wave({
+    double dotWidth,
+    double dotHeight,
+    double spacing,
+    double radius,
+    Color dotColor,
+    Color activeDotColor,
+    double strokeWidth,
+    PaintingStyle paintStyle,
+    double minScale,
+  }) = WaveIndicatorEffect;
+
+  /// Rings like radio buttons: a dot grows inside the current ring.
+  const factory IndicatorEffect.radio({
+    double dotWidth,
+    double dotHeight,
+    double spacing,
+    double radius,
+    Color dotColor,
+    Color activeDotColor,
+    double strokeWidth,
+    PaintingStyle paintStyle,
+    double innerScale,
+  }) = RadioIndicatorEffect;
+
   /// Only a few dots show and they scroll along, for long lists.
   const factory IndicatorEffect.scrollingDots({
     double dotWidth,

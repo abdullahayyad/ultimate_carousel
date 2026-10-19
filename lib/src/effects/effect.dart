@@ -73,13 +73,17 @@ abstract class CarouselEffect {
 
   /// The current item shrinks into the background while the next one slides
   /// in over it.
-  const factory CarouselEffect.foregroundToBackground({double drift}) =
-      ForegroundToBackgroundCarouselEffect;
+  const factory CarouselEffect.foregroundToBackground({
+    double drift,
+    double endScale,
+  }) = ForegroundToBackgroundCarouselEffect;
 
   /// The next item grows out of the background while the current one slides
   /// away over it.
-  const factory CarouselEffect.backgroundToForeground({double drift}) =
-      BackgroundToForegroundCarouselEffect;
+  const factory CarouselEffect.backgroundToForeground({
+    double drift,
+    double startScale,
+  }) = BackgroundToForegroundCarouselEffect;
 
   /// Neighbours shrink, darken and blur, so the current item is in focus.
   const factory CarouselEffect.focus({
@@ -259,6 +263,19 @@ abstract class CarouselEffect {
   /// The next item pours in from the trailing edge in a liquid wave.
   const factory CarouselEffect.liquid({double waveHeight, bool followPointer}) =
       LiquidCarouselEffect;
+
+  /// The next item swells out of a point in a circle that grows until its
+  /// edge is straight, then the old item shrinks back into the point.
+  const factory CarouselEffect.concentric({Offset origin}) =
+      ConcentricCarouselEffect;
+
+  /// The next item is uncovered by a hand that sweeps around like a clock's.
+  const factory CarouselEffect.clock({Offset origin, double startAngle}) =
+      ClockCarouselEffect;
+
+  /// The next item appears block by block, like a mosaic.
+  const factory CarouselEffect.blocks({int columns, int rows, bool random}) =
+      BlocksCarouselEffect;
 
   // ---------------------------------------------------------------------------
   // Your own

@@ -3,10 +3,22 @@
 * First release.
 * `UltimateCarousel` with looping, autoplay, vertical and right-to-left
   layouts, snapping physics, keyboard, mouse wheel and screen reader support.
-* Transitions: slide, fade, enlarge (scale, height, zoom), zoom out, zoom in,
-  depth, parallax, stack, accordion, rotate, cube (outside and inside), flip,
-  cover flow, ring, wheel, cylinder, helix, page turn, deck, tinder, fan,
-  circular reveal, wipe, blinds and liquid, plus `CarouselEffect.custom`.
-* `CarouselIndicator` with worm, expanding dots, jumping dot, scrolling dots,
-  slide, scale, swap, color transition, fill, story segments, line and
-  fraction effects.
+* `UltimateCarouselController` to move, jump, scrub (`jumpTo`) and control
+  autoplay.
+* 38 transitions:
+  * Slides and fades: slide, fade (cross fade, zoom), enlarge (scale, height,
+    zoom), zoom out, zoom in, depth, parallax, stack, accordion, rotate,
+    foreground to background, background to foreground, focus and overlap.
+  * 3D: cube (outside and inside), flip, cover flow, tablet, ring (facing
+    out or at the viewer, tilted), wheel, cylinder, helix, page turn and
+    tunnel.
+  * Material 3: multi-browse, hero, centered hero and full screen layouts.
+  * Cards: deck, tinder, fan, arc and scatter.
+  * Reveals: circular reveal, wipe, curtain, blinds, liquid, concentric,
+    clock and blocks.
+  * Your own with `CarouselEffect.custom`, `ItemMatrix` and
+    `RevealCarouselEffect`.
+* `CarouselIndicator` with 15 effects: worm (four styles), expanding dots,
+  jumping dot, drop, wave, radio, scrolling dots, slide, scale, swap (three
+  styles), color transition, fill, story segments, line and fraction.
+* `CarouselItemScope` and `CarouselParallax` to animate item content.

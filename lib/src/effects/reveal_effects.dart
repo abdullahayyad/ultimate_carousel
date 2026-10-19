@@ -80,6 +80,168 @@ class CircularRevealCarouselEffect extends RevealCarouselEffect {
   }
 }
 
+/// The next item swells out of a point in a circle that grows until its edge
+/// is a straight line; then what is left of the current item shrinks back
+/// into the point as a circle. This is the concentric transition known from
+/// onboarding screens.
+class ConcentricCarouselEffect extends RevealCarouselEffect {
+  /// Creates a concentric reveal.
+  const ConcentricCarouselEffect({this.origin = const Offset(0.5, 0.8)});
+
+  /// The point the circles grow from and shrink into, as fractions of the
+  /// item (0.5, 0.5 is the center), in carousel space: x runs along the
+  /// scroll direction.
+  final Offset origin;
+
+  @override
+  Path revealPath(CarouselItemInfo info, Size size, double progress) {
+    final double p = clampDouble(progress, 0, 1);
+    final Offset point = Offset(
+      (origin.dx - 0.5) * size.width,
+      (origin.dy - 0.5) * size.height,
+    );
+    // Halfway through, the circle is so large that its edge looks straight.
+    final double largest = 20 * math.max(size.width, size.height);
+    double radius(double u) =>
+        largest * (math.pow(2, 10 * u).toDouble() - 1) / 1023;
+    if (p <= 0.5) {
+      // The circle grows with its leading edge pinned to the point.
+      final double r = radius(p * 2);
+      return Path()
+        ..addOval(Rect.fromCircle(center: point.translate(r, 0), radius: r));
+    }
+    // The rest of the old item is a circle that shrinks into the point,
+    // with its trailing edge pinned to it.
+    final double r = radius((1 - p) * 2);
+    return Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(
+        Rect.fromCenter(
+          center: Offset.zero,
+          width: size.width,
+          height: size.height,
+        ),
+      )
+      ..addOval(Rect.fromCircle(center: point.translate(-r, 0), radius: r));
+  }
+}
+
+/// The next item is uncovered by a hand that sweeps around like a clock's.
+class ClockCarouselEffect extends RevealCarouselEffect {
+  /// Creates a clock wipe.
+  const ClockCarouselEffect({
+    this.origin = const Offset(0.5, 0.5),
+    this.startAngle = -math.pi / 2,
+  });
+
+  /// The point the hand turns around, as fractions of the item (0.5, 0.5 is
+  /// the center), in carousel space.
+  final Offset origin;
+
+  /// Where the hand starts, in radians clockwise from three o'clock. The
+  /// default starts at twelve o'clock.
+  final double startAngle;
+
+  @override
+  Path revealPath(CarouselItemInfo info, Size size, double progress) {
+    final double p = clampDouble(progress, 0, 1);
+    final Rect bounds = Rect.fromCenter(
+      center: Offset.zero,
+      width: size.width,
+      height: size.height,
+    );
+    if (p <= 0) {
+      return Path();
+    }
+    if (p >= 1) {
+      return Path()..addRect(bounds);
+    }
+    final Offset center = Offset(
+      (origin.dx - 0.5) * size.width,
+      (origin.dy - 0.5) * size.height,
+    );
+    final double reach = <double>[
+      (center - bounds.topLeft).distance,
+      (center - bounds.topRight).distance,
+      (center - bounds.bottomLeft).distance,
+      (center - bounds.bottomRight).distance,
+    ].reduce(math.max);
+    return Path()
+      ..moveTo(center.dx, center.dy)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: reach + 1),
+        startAngle,
+        2 * math.pi * p,
+        false,
+      )
+      ..close();
+  }
+}
+
+/// The next item appears block by block, like a mosaic.
+class BlocksCarouselEffect extends RevealCarouselEffect {
+  /// Creates a block reveal.
+  const BlocksCarouselEffect({
+    this.columns = 6,
+    this.rows = 4,
+    this.random = true,
+  });
+
+  /// How many blocks there are along the scroll direction.
+  final int columns;
+
+  /// How many blocks there are across the scroll direction.
+  final int rows;
+
+  /// Whether the blocks appear in a random order; otherwise they sweep in
+  /// diagonally from the trailing corner.
+  final bool random;
+
+  /// How long each block takes to grow, as a share of the whole move.
+  static const double _span = 0.4;
+
+  static double _noise(int index) {
+    final double x = math.sin(index * 12.9898 + 78.233) * 43758.5453;
+    return x - x.floorToDouble();
+  }
+
+  @override
+  Path revealPath(CarouselItemInfo info, Size size, double progress) {
+    final double p = clampDouble(progress, 0, 1);
+    final int across = math.max(1, columns);
+    final int down = math.max(1, rows);
+    final double width = size.width / across;
+    final double height = size.height / down;
+    final int diagonals = across + down - 2;
+    final Path path = Path();
+    for (int row = 0; row < down; row++) {
+      for (int column = 0; column < across; column++) {
+        final double order = random
+            ? _noise(row * across + column)
+            : diagonals == 0
+                ? 0
+                : (across - 1 - column + row) / diagonals;
+        final double grow =
+            clampDouble((p - order * (1 - _span)) / _span, 0, 1);
+        if (grow <= 0) {
+          continue;
+        }
+        path.addRect(
+          Rect.fromCenter(
+            center: Offset(
+              -size.width / 2 + (column + 0.5) * width,
+              -size.height / 2 + (row + 0.5) * height,
+            ),
+            width: width * grow,
+            height: height * grow,
+          ),
+        );
+      }
+    }
+    return path;
+  }
+}
+
 /// The next item is wiped in from the trailing edge.
 class WipeCarouselEffect extends RevealCarouselEffect {
   /// Creates a wipe.

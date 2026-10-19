@@ -332,6 +332,24 @@ const List<EffectOption> effectOptions = <EffectOption>[
     CarouselEffect.liquid(),
     'CarouselEffect.liquid()',
   ),
+  EffectOption(
+    'Concentric',
+    EffectFamily.reveals,
+    CarouselEffect.concentric(),
+    'CarouselEffect.concentric()',
+  ),
+  EffectOption(
+    'Clock',
+    EffectFamily.reveals,
+    CarouselEffect.clock(),
+    'CarouselEffect.clock()',
+  ),
+  EffectOption(
+    'Blocks',
+    EffectFamily.reveals,
+    CarouselEffect.blocks(),
+    'CarouselEffect.blocks()',
+  ),
 ];
 
 /// One indicator the gallery can show.
@@ -392,6 +410,30 @@ final List<IndicatorOption> indicatorOptions = <IndicatorOption>[
     (ColorScheme s) => IndicatorEffect.jumpingDot(
       verticalOffset: 8,
       dotColor: s.outlineVariant,
+      activeDotColor: s.primary,
+    ),
+  ),
+  IndicatorOption(
+    'Drop',
+    'IndicatorEffect.drop()',
+    (ColorScheme s) => IndicatorEffect.drop(
+      dotColor: s.outlineVariant,
+      activeDotColor: s.primary,
+    ),
+  ),
+  IndicatorOption(
+    'Wave',
+    'IndicatorEffect.wave()',
+    (ColorScheme s) => IndicatorEffect.wave(
+      dotColor: s.outlineVariant,
+      activeDotColor: s.primary,
+    ),
+  ),
+  IndicatorOption(
+    'Radio',
+    'IndicatorEffect.radio()',
+    (ColorScheme s) => IndicatorEffect.radio(
+      dotColor: s.outline,
       activeDotColor: s.primary,
     ),
   ),

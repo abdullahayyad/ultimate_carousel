@@ -36,7 +36,10 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('coverflow', CarouselEffect.coverflow()),
   ('tablet', CarouselEffect.tablet()),
   ('ring', CarouselEffect.ring(itemsOnRing: 6)),
-  ('ring_tilted', CarouselEffect.ring(faceViewer: true, tilt: 0.35)),
+  (
+    'ring_tilted',
+    CarouselEffect.ring(faceViewer: true, tilt: 0.45, viewportFraction: 0.42),
+  ),
   ('wheel', CarouselEffect.wheel()),
   ('cylinder', CarouselEffect.cylinder()),
   ('helix', CarouselEffect.helix()),
@@ -54,7 +57,17 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('curtain', CarouselEffect.curtain()),
   ('blinds', CarouselEffect.blinds()),
   ('liquid', CarouselEffect.liquid(followPointer: false)),
+  ('concentric', CarouselEffect.concentric()),
+  ('clock', CarouselEffect.clock()),
+  ('blocks', CarouselEffect.blocks()),
 ];
+
+/// Room around the carousel in a tile, for effects that need more than the
+/// default.
+const Map<String, EdgeInsets> _tilePadding = <String, EdgeInsets>{
+  // The far side of a tilted ring rises above the items.
+  'ring_tilted': EdgeInsets.fromLTRB(0, 84, 0, 16),
+};
 
 const Color _dot = Color(0x55FFFFFF);
 const Color _active = Color(0xFFB794F6);
@@ -83,6 +96,9 @@ const List<(String, IndicatorEffect)> gifIndicators =
       activeDotColor: _active,
     ),
   ),
+  ('drop', IndicatorEffect.drop(dotColor: _dot, activeDotColor: _active)),
+  ('wave', IndicatorEffect.wave(dotColor: _dot, activeDotColor: _active)),
+  ('radio', IndicatorEffect.radio(dotColor: _dot, activeDotColor: _active)),
   (
     'scrollingDots',
     IndicatorEffect.scrollingDots(dotColor: _dot, activeDotColor: _active),
@@ -276,11 +292,15 @@ class _Card extends StatelessWidget {
   }
 }
 
-Widget _tile(CarouselEffect effect, UltimateCarouselController controller) {
+Widget _tile(
+  String name,
+  CarouselEffect effect,
+  UltimateCarouselController controller,
+) {
   return ColoredBox(
     color: _background,
     child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: _tilePadding[name] ?? const EdgeInsets.symmetric(vertical: 14),
       child: UltimateCarousel.builder(
         controller: controller,
         effect: effect,
@@ -297,12 +317,16 @@ Widget _tile(CarouselEffect effect, UltimateCarouselController controller) {
 Widget _frame(GlobalKey key, Size size, Widget child) {
   return MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: Align(
-      alignment: Alignment.topLeft,
-      child: RepaintBoundary(
-        key: key,
-        child: ClipRect(
-          child: SizedBox.fromSize(size: size, child: child),
+    // A Material gives text its normal style instead of the debug one.
+    home: Material(
+      type: MaterialType.transparency,
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: RepaintBoundary(
+          key: key,
+          child: ClipRect(
+            child: SizedBox.fromSize(size: size, child: child),
+          ),
         ),
       ),
     ),
@@ -330,7 +354,9 @@ void main() {
           UltimateCarouselController();
       addTearDown(controller.dispose);
       final GlobalKey key = GlobalKey();
-      await tester.pumpWidget(_frame(key, _tileSize, _tile(effect, controller)));
+      await tester.pumpWidget(
+        _frame(key, _tileSize, _tile(name, effect, controller)),
+      );
       await tester.pump();
       for (int frame = 0; frame < _frameCount; frame++) {
         controller.jumpTo(_pageAt(frame));
@@ -453,7 +479,11 @@ void main() {
             for (int i = 0; i < heroEffects.length; i++)
               SizedBox.fromSize(
                 size: _tileSize,
-                child: _tile(byName[heroEffects[i]]!, controllers[i]),
+                child: _tile(
+                  heroEffects[i],
+                  byName[heroEffects[i]]!,
+                  controllers[i],
+                ),
               ),
           ],
         ),

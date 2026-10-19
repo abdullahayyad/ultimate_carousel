@@ -55,12 +55,13 @@ class DeckCarouselEffect extends CarouselEffect {
       return CarouselItemTransform.hidden;
     }
     if (d <= 0) {
+      // The top card stays solid while it slides off, so the card below
+      // never shows through it.
       return CarouselItemTransform(
         matrix: (ItemMatrix()
               ..rotateZ(d * leaveAngle)
               ..translate(d * (info.layout.slotExtent + width * 0.15)))
             .value,
-        opacity: clampDouble(1 + d * 0.6, 0, 1),
       );
     }
     final double fade = clampDouble(cards + 1 - d, 0, 1);

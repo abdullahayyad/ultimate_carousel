@@ -453,11 +453,17 @@ class OverlapCarouselEffect extends CarouselEffect {
 /// in over it at full size.
 class ForegroundToBackgroundCarouselEffect extends CarouselEffect {
   /// Creates a foreground-to-background effect.
-  const ForegroundToBackgroundCarouselEffect({this.drift = 0.25});
+  const ForegroundToBackgroundCarouselEffect({
+    this.drift = 0.25,
+    this.endScale = 0,
+  });
 
   /// How far the shrinking item drifts with the motion, as a fraction of a
-  /// full slide.
+  /// full slide. 1 keeps it sliding at full speed.
   final double drift;
+
+  /// The size the shrinking item reaches as it leaves, from 0 to 1.
+  final double endScale;
 
   @override
   int? itemsPerSide(CarouselLayout layout) => 1;
@@ -477,9 +483,10 @@ class ForegroundToBackgroundCarouselEffect extends CarouselEffect {
     if (d <= -1) {
       return CarouselItemTransform.hidden;
     }
+    final double lowest = clampDouble(endScale, 0, 1);
     return CarouselItemTransform(
       matrix: (ItemMatrix()
-            ..scale(1 + d)
+            ..scale(1 + d * (1 - lowest))
             ..translate(d * slot * drift))
           .value,
     );
@@ -490,11 +497,17 @@ class ForegroundToBackgroundCarouselEffect extends CarouselEffect {
 /// away over it.
 class BackgroundToForegroundCarouselEffect extends CarouselEffect {
   /// Creates a background-to-foreground effect.
-  const BackgroundToForegroundCarouselEffect({this.drift = 0.25});
+  const BackgroundToForegroundCarouselEffect({
+    this.drift = 0.25,
+    this.startScale = 0,
+  });
 
   /// How far the growing item drifts with the motion, as a fraction of a
-  /// full slide.
+  /// full slide. 1 keeps it sliding at full speed.
   final double drift;
+
+  /// The size the growing item starts from, from 0 to 1.
+  final double startScale;
 
   @override
   int? itemsPerSide(CarouselLayout layout) => 1;
@@ -514,9 +527,10 @@ class BackgroundToForegroundCarouselEffect extends CarouselEffect {
     if (d >= 1) {
       return CarouselItemTransform.hidden;
     }
+    final double lowest = clampDouble(startScale, 0, 1);
     return CarouselItemTransform(
       matrix: (ItemMatrix()
-            ..scale(1 - d)
+            ..scale(1 - d * (1 - lowest))
             ..translate(d * slot * drift))
           .value,
     );

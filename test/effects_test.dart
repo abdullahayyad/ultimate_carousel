@@ -56,6 +56,18 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('curtain', CarouselEffect.curtain()),
   ('blinds', CarouselEffect.blinds()),
   ('liquid', CarouselEffect.liquid()),
+  ('concentric', CarouselEffect.concentric()),
+  ('clock', CarouselEffect.clock()),
+  ('blocks', CarouselEffect.blocks()),
+  ('blocks in order', CarouselEffect.blocks(random: false)),
+  (
+    'foreground to background, sliding',
+    CarouselEffect.foregroundToBackground(drift: 1, endScale: 0.4),
+  ),
+  (
+    'background to foreground, sliding',
+    CarouselEffect.backgroundToForeground(drift: 1, startScale: 0.4),
+  ),
 ];
 
 CarouselLayout _layout(CarouselEffect effect) {
@@ -142,6 +154,55 @@ void main() {
     expect(placement(0.5, 0.5).$2, closeTo(250, 1e-6));
     expect(placement(1.5, 0.5).$2, closeTo(150, 1e-6));
     expect(placement(2.5, 0.5).$2, closeTo(50, 1e-6));
+  });
+
+  test('reveal shapes grow from nothing to the whole item', () {
+    const Size size = Size(400, 300);
+    final CarouselItemInfo info = _info(const CarouselEffect.wipe(), 0.5);
+    // A grid of points inside the item, away from block and slat edges.
+    final List<Offset> samples = <Offset>[
+      for (int i = 0; i < 10; i++)
+        for (int j = 0; j < 8; j++)
+          Offset(-200 + 400 * (i + 0.53) / 10, -150 + 300 * (j + 0.47) / 8),
+    ];
+    double covered(Path path) =>
+        samples.where(path.contains).length / samples.length;
+    const List<RevealCarouselEffect> reveals = <RevealCarouselEffect>[
+      CircularRevealCarouselEffect(),
+      WipeCarouselEffect(),
+      CurtainCarouselEffect(),
+      BlindsCarouselEffect(),
+      LiquidCarouselEffect(followPointer: false),
+      ConcentricCarouselEffect(),
+      ClockCarouselEffect(),
+      BlocksCarouselEffect(),
+      BlocksCarouselEffect(random: false),
+    ];
+    for (final RevealCarouselEffect effect in reveals) {
+      final String name = '$effect';
+      expect(covered(effect.revealPath(info, size, 0)), 0, reason: name);
+      expect(covered(effect.revealPath(info, size, 1)), 1, reason: name);
+      double last = 0;
+      for (int step = 1; step < 20; step++) {
+        final double now = covered(effect.revealPath(info, size, step / 20));
+        expect(now, greaterThanOrEqualTo(last - 0.03), reason: '$name $step');
+        last = now;
+      }
+    }
+  });
+
+  test('the concentric reveal covers half the item halfway through', () {
+    const Size size = Size(400, 300);
+    final CarouselItemInfo info = _info(const CarouselEffect.wipe(), 0.5);
+    const ConcentricCarouselEffect effect =
+        ConcentricCarouselEffect(origin: Offset(0.5, 0.5));
+    for (final double progress in <double>[0.499, 0.501]) {
+      final Path path = effect.revealPath(info, size, progress);
+      expect(path.contains(const Offset(60, 100)), isTrue);
+      expect(path.contains(const Offset(60, -100)), isTrue);
+      expect(path.contains(const Offset(-60, 100)), isFalse);
+      expect(path.contains(const Offset(-60, -100)), isFalse);
+    }
   });
 
   for (final (String name, CarouselEffect effect) in allEffects) {

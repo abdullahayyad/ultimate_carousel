@@ -213,6 +213,10 @@ class RingCarouselEffect extends CarouselEffect {
 
   /// How far above the ring the viewer is, in radians. Positive values make
   /// the far side of the ring rise, like looking down on a carousel ride.
+  ///
+  /// The far side then rises above the items, so leave room for it: give
+  /// the carousel `clipBehavior: Clip.none` and some space above it, or pad
+  /// the top of your item widgets.
   final double tilt;
 
   /// The strength of the 3D perspective.

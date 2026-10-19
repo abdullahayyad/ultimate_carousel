@@ -334,6 +334,156 @@ class JumpingDotIndicatorEffect extends DotIndicatorEffect {
   }
 }
 
+/// The current dot hops to the next place and shrinks in mid-air, like a
+/// drop of water.
+class DropIndicatorEffect extends DotIndicatorEffect {
+  /// Creates a hopping drop.
+  const DropIndicatorEffect({
+    super.dotWidth,
+    super.dotHeight,
+    super.spacing,
+    super.radius,
+    super.dotColor,
+    super.activeDotColor,
+    super.strokeWidth,
+    super.paintStyle,
+    this.dropHeight = 10,
+    this.dropScale = 0.6,
+  });
+
+  /// How high the dot hops, in logical pixels.
+  final double dropHeight;
+
+  /// The size of the dot at the top of its hop, compared with its size at
+  /// rest.
+  final double dropScale;
+
+  double get _scale => math.max(0.0, dropScale);
+
+  @override
+  double get horizontalPadding => dotWidth * math.max(0.0, _scale - 1) / 2;
+
+  @override
+  double get verticalPadding =>
+      dropHeight.abs() + dotHeight * math.max(0.0, _scale - 1) / 2;
+
+  void _paintDot(Canvas canvas, Size size, double position, double t) {
+    // 0 at both ends of the move and 1 halfway, along straight lines.
+    final double hop = 1 - (1 - 2 * t).abs();
+    final Offset center = Offset(
+      horizontalPadding + position * step + dotWidth / 2,
+      size.height / 2 - dropHeight * hop,
+    );
+    canvas.drawRRect(
+      dotAt(center, scale: 1 + (_scale - 1) * hop),
+      activePaint,
+    );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size, double page, int count) {
+    paintDots(canvas, size, count);
+    final IndicatorSegment segment = IndicatorSegment.of(page, count);
+    if (segment.wraps) {
+      paintWithOpacity(canvas, size, 1 - segment.t,
+          () => _paintDot(canvas, size, segment.from.toDouble(), 0));
+      paintWithOpacity(canvas, size, segment.t,
+          () => _paintDot(canvas, size, segment.to.toDouble(), 0));
+    } else {
+      _paintDot(canvas, size, segment.from + segment.t, segment.t);
+    }
+  }
+}
+
+/// The current dot slides to the next place and shrinks on the way, like a
+/// wave passing through.
+class WaveIndicatorEffect extends DotIndicatorEffect {
+  /// Creates a wave.
+  const WaveIndicatorEffect({
+    super.dotWidth,
+    super.dotHeight,
+    super.spacing,
+    super.radius,
+    super.dotColor,
+    super.activeDotColor,
+    super.strokeWidth,
+    super.paintStyle,
+    this.minScale = 0.3,
+  });
+
+  /// The size of the dot halfway between two places, compared with its size
+  /// at rest.
+  final double minScale;
+
+  void _paintDot(Canvas canvas, Size size, double position, double t) {
+    final double low = clampDouble(minScale, 0, 1);
+    final Offset center = Offset(
+      horizontalPadding + position * step + dotWidth / 2,
+      size.height / 2,
+    );
+    canvas.drawRRect(
+      dotAt(center, scale: low + (1 - low) * (1 - 2 * t).abs()),
+      activePaint,
+    );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size, double page, int count) {
+    paintDots(canvas, size, count);
+    final IndicatorSegment segment = IndicatorSegment.of(page, count);
+    if (segment.wraps) {
+      paintWithOpacity(canvas, size, 1 - segment.t,
+          () => _paintDot(canvas, size, segment.from.toDouble(), 0));
+      paintWithOpacity(canvas, size, segment.t,
+          () => _paintDot(canvas, size, segment.to.toDouble(), 0));
+    } else {
+      _paintDot(canvas, size, segment.from + segment.t, segment.t);
+    }
+  }
+}
+
+/// Every dot is a ring, like a radio button: a dot grows inside the current
+/// ring while it shrinks in the one being left.
+class RadioIndicatorEffect extends DotIndicatorEffect {
+  /// Creates radio buttons.
+  const RadioIndicatorEffect({
+    super.dotWidth = 12,
+    super.dotHeight = 12,
+    super.spacing,
+    super.radius = 6,
+    super.dotColor,
+    super.activeDotColor,
+    super.strokeWidth = 1.5,
+    super.paintStyle = PaintingStyle.stroke,
+    this.innerScale = 0.5,
+  });
+
+  /// The size of the inner dot compared with its ring.
+  final double innerScale;
+
+  @override
+  void paint(Canvas canvas, Size size, double page, int count) {
+    final IndicatorSegment segment = IndicatorSegment.of(page, count);
+    final bool rings = paintStyle == PaintingStyle.stroke;
+    final double inner = clampDouble(innerScale, 0, 1);
+    for (int i = 0; i < count; i++) {
+      final double active = segment.activeness(i);
+      final Offset center = dotCenter(i, size);
+      final Paint ring = dotPaint;
+      if (rings) {
+        ring.color = Color.lerp(dotColor, activeDotColor, active)!;
+      }
+      canvas.drawRRect(
+        dotAt(center).deflate(rings ? strokeWidth / 2 : 0),
+        ring,
+      );
+      if (active > 0) {
+        canvas.drawRRect(dotAt(center, scale: inner * active), activePaint);
+      }
+    }
+  }
+}
+
 /// Only a few dots show at a time and they scroll along, for long lists.
 class ScrollingDotsIndicatorEffect extends DotIndicatorEffect {
   /// Creates scrolling dots.

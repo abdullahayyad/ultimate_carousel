@@ -32,6 +32,11 @@ const List<(String, IndicatorEffect)> allIndicators =
   ('line', IndicatorEffect.line()),
   ('line fill', IndicatorEffect.line(fill: true)),
   ('fraction', IndicatorEffect.fraction()),
+  ('drop', IndicatorEffect.drop()),
+  ('growing drop', IndicatorEffect.drop(dropScale: 1.3)),
+  ('wave', IndicatorEffect.wave()),
+  ('radio', IndicatorEffect.radio()),
+  ('filled radio', IndicatorEffect.radio(paintStyle: PaintingStyle.fill)),
 ];
 
 void main() {
