@@ -63,6 +63,12 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('concentric', CarouselEffect.concentric()),
   ('clock', CarouselEffect.clock()),
   ('blocks', CarouselEffect.blocks()),
+  ('creative_sink_back', CreativeCarouselEffect.sinkBack()),
+  ('creative_drift_apart', CreativeCarouselEffect.driftApart()),
+  ('creative_push', CreativeCarouselEffect.push()),
+  ('creative_tumble', CreativeCarouselEffect.tumble()),
+  ('creative_spin', CreativeCarouselEffect.spin()),
+  ('creative_door', CreativeCarouselEffect.door()),
 ];
 
 /// Room around the carousel in a tile, for effects that need more than the

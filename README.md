@@ -5,7 +5,7 @@
 [![Live demo](https://img.shields.io/badge/demo-try%20it%20live-7F5AF0)](https://abdullahayyad.github.io/ultimate_carousel/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/abdullahayyad/ultimate_carousel/blob/main/LICENSE)
 
-**Every Flutter carousel transition in one package.** 41 transitions and 15
+**Every Flutter carousel transition in one package.** 47 transitions and 15
 animated page indicators behind a single widget, with no dependencies besides
 Flutter.
 
@@ -134,6 +134,35 @@ background color instead of white.
 
 `circularReveal(followPointer: true)` and `liquid()` follow the finger, and
 `blocks(random: false)` sweeps the blocks in diagonally.
+
+### Creative
+
+Say where the previous and next items go and the carousel moves every item
+between those poses, like the creative effect of the
+[Swiper](https://swiperjs.com) web slider. These six looks are Swiper's
+creative demos:
+
+| | | |
+|:-:|:-:|:-:|
+| ![sink back](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/creative_sink_back.gif)<br>`CreativeCarouselEffect.sinkBack()` | ![drift apart](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/creative_drift_apart.gif)<br>`CreativeCarouselEffect.driftApart()` | ![push](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/creative_push.gif)<br>`CreativeCarouselEffect.push()` |
+| ![tumble](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/creative_tumble.gif)<br>`CreativeCarouselEffect.tumble()` | ![spin](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/creative_spin.gif)<br>`CreativeCarouselEffect.spin()` | ![door](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/creative_door.gif)<br>`CreativeCarouselEffect.door()` |
+
+Or make your own:
+
+```dart
+CarouselEffect.creative(
+  previous: CarouselPose(offset: Offset(-0.2, 0), depth: 100, shade: 0.3),
+  next: CarouselPose(offset: Offset(1, 0)),
+)
+```
+
+A `CarouselPose` takes an `offset` (in item sizes), a `depth` (logical pixels
+away from the viewer), `rotateX`, `rotateY` and `rotateZ` (radians), `scale`,
+`opacity`, `shade` and the `origin` it turns around. To bring over a Swiper
+setting, `translate: ['-20%', 0, -400]` becomes
+`offset: Offset(-0.2, 0), depth: 400`, and `rotate: [0, 100, 0]` becomes
+`rotateY: -100 * pi / 180`: Swiper turns the other way around the X and Y
+axes.
 
 ## Indicators
 
@@ -290,6 +319,7 @@ ideas.
 | [fan_carousel_image_slider](https://pub.dev/packages/fan_carousel_image_slider), [curved_carousel](https://pub.dev/packages/curved_carousel), [flywheel_carousel](https://pub.dev/packages/flywheel_carousel) | fan and arc | MIT, BSD-3-Clause |
 | [turn_page_transition](https://pub.dev/packages/turn_page_transition), [page_turn](https://pub.dev/packages/page_turn) | page turn | BSD-3-Clause, MIT |
 | [shader_transitions](https://pub.dev/packages/shader_transitions), [intro_views_flutter](https://pub.dev/packages/intro_views_flutter) | clock, blocks and circle reveals | MIT |
+| [Swiper](https://swiperjs.com) | creative effect and its demo looks | MIT |
 | Flutter's `CarouselView` and `ListWheelScrollView` | Material 3 layouts, wheel | BSD-3-Clause |
 
 ## License

@@ -32,6 +32,33 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('uncover', CarouselEffect.uncover()),
   ('uncover, still', CarouselEffect.uncover(parallax: 0, shade: 0)),
   ('skew', CarouselEffect.skew()),
+  ('creative', CarouselEffect.creative()),
+  ('creative sink back', CreativeCarouselEffect.sinkBack()),
+  ('creative drift apart', CreativeCarouselEffect.driftApart()),
+  ('creative push', CreativeCarouselEffect.push()),
+  ('creative tumble', CreativeCarouselEffect.tumble()),
+  ('creative spin', CreativeCarouselEffect.spin()),
+  ('creative door', CreativeCarouselEffect.door()),
+  (
+    'creative, own poses',
+    CarouselEffect.creative(
+      previous: CarouselPose(
+        offset: Offset(-0.5, 0.2),
+        rotateZ: -0.3,
+        scale: 0.6,
+        opacity: 0.4,
+        shade: 0.5,
+        origin: Alignment.bottomCenter,
+      ),
+      next: CarouselPose(
+        offset: Offset(0.5, -0.2),
+        rotateY: 0.6,
+        scale: 0.6,
+        opacity: 0.4,
+      ),
+      limit: 2,
+    ),
+  ),
   ('cube', CarouselEffect.cube()),
   ('cube inside', CarouselEffect.cube(inside: true)),
   ('flip', CarouselEffect.flip()),
@@ -326,6 +353,45 @@ void main() {
     expect(lean(1), greaterThan(10));
     expect(lean(-1), lessThan(-10));
     expect(lean(0), closeTo(0, 1e-9));
+  });
+
+  test('creative presets follow the web demos', () {
+    // Push: the previous item moves a fifth of its width, darkens and stays
+    // below the next item.
+    const CreativeCarouselEffect push = CreativeCarouselEffect.push();
+    final CarouselItemTransform leaving = push.transform(_info(push, -0.5));
+    expect(
+      MatrixUtils.transformPoint(leaving.matrix!, Offset.zero).dx,
+      closeTo(-0.2 * 400 * 0.5, 0.1),
+    );
+    expect(leaving.shade, closeTo(0.125, 1e-9));
+    expect(
+      push.paintOrder(_info(push, -0.5)),
+      lessThan(push.paintOrder(_info(push, 0.5))),
+    );
+
+    // Tumble: once an item has turned more than a quarter turn it shows its
+    // back, which is hidden.
+    const CreativeCarouselEffect tumble = CreativeCarouselEffect.tumble();
+    expect(tumble.transform(_info(tumble, -0.4)).visible, isTrue);
+    expect(tumble.transform(_info(tumble, -0.6)).visible, isFalse);
+
+    // Door: the previous item swings around its left edge, so its right
+    // edge moves away and looks shorter.
+    const CreativeCarouselEffect door = CreativeCarouselEffect.door();
+    final Matrix4 swing = door.transform(_info(door, -0.5)).matrix!;
+    double edgeHeight(double x) =>
+        MatrixUtils.transformPoint(swing, Offset(x, 150)).dy -
+        MatrixUtils.transformPoint(swing, Offset(x, -150)).dy;
+    expect(edgeHeight(200), lessThan(edgeHeight(-200) - 20));
+  });
+
+  test('carousel poses compare by value', () {
+    CarouselPose pose(double depth) =>
+        CarouselPose(offset: const Offset(1, 0), depth: depth);
+    expect(pose(10), pose(10));
+    expect(pose(10).hashCode, pose(10).hashCode);
+    expect(pose(10), isNot(pose(20)));
   });
 
   testWidgets('the layered stack fades neighbours towards its color', (

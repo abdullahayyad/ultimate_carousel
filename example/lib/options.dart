@@ -16,7 +16,10 @@ enum EffectFamily {
   cards('Cards'),
 
   /// Items uncovered in place.
-  reveals('Reveals');
+  reveals('Reveals'),
+
+  /// Swiper's creative effect demos.
+  creative('Creative');
 
   const EffectFamily(this.label);
 
@@ -367,6 +370,42 @@ const List<EffectOption> effectOptions = <EffectOption>[
     EffectFamily.reveals,
     CarouselEffect.blocks(),
     'CarouselEffect.blocks()',
+  ),
+  EffectOption(
+    'Sink back',
+    EffectFamily.creative,
+    CreativeCarouselEffect.sinkBack(),
+    'CreativeCarouselEffect.sinkBack()',
+  ),
+  EffectOption(
+    'Drift apart',
+    EffectFamily.creative,
+    CreativeCarouselEffect.driftApart(),
+    'CreativeCarouselEffect.driftApart()',
+  ),
+  EffectOption(
+    'Push',
+    EffectFamily.creative,
+    CreativeCarouselEffect.push(),
+    'CreativeCarouselEffect.push()',
+  ),
+  EffectOption(
+    'Tumble',
+    EffectFamily.creative,
+    CreativeCarouselEffect.tumble(),
+    'CreativeCarouselEffect.tumble()',
+  ),
+  EffectOption(
+    'Spin',
+    EffectFamily.creative,
+    CreativeCarouselEffect.spin(),
+    'CreativeCarouselEffect.spin()',
+  ),
+  EffectOption(
+    'Door',
+    EffectFamily.creative,
+    CreativeCarouselEffect.door(),
+    'CreativeCarouselEffect.door()',
   ),
 ];
 

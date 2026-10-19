@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import '../item.dart';
 import 'basic_effects.dart';
 import 'card_effects.dart';
+import 'creative_effect.dart';
 import 'custom_effect.dart';
 import 'material_effect.dart';
 import 'reveal_effects.dart';
@@ -302,6 +303,24 @@ abstract class CarouselEffect {
   /// The next item appears block by block, like a mosaic.
   const factory CarouselEffect.blocks({int columns, int rows, bool random}) =
       BlocksCarouselEffect;
+
+  // ---------------------------------------------------------------------------
+  // Creative
+
+  /// Say where the previous and next items go and the carousel moves every
+  /// item between those poses, like the creative effect of the Swiper web
+  /// slider. The defaults make a plain slide.
+  ///
+  /// For ready-made looks, use the named constructors of
+  /// [CreativeCarouselEffect], such as `CreativeCarouselEffect.push()`.
+  const factory CarouselEffect.creative({
+    CarouselPose previous,
+    CarouselPose next,
+    double limit,
+    double perspective,
+    bool hideBackFace,
+    double viewportFraction,
+  }) = CreativeCarouselEffect;
 
   // ---------------------------------------------------------------------------
   // Your own
