@@ -157,9 +157,7 @@ class LayeredCarouselEffect extends CarouselEffect {
   double _reach(double count) {
     double edge(double away) => _offset(away) + _scale(away) / 2;
     final double c = clampDouble(count, 0, 2);
-    return c <= 1
-        ? _lerp(0.5, edge(1), c)
-        : _lerp(edge(1), edge(2), c - 1);
+    return c <= 1 ? _lerp(0.5, edge(1), c) : _lerp(edge(1), edge(2), c - 1);
   }
 
   double _balance(CarouselItemInfo info) {
