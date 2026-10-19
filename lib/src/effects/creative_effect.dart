@@ -262,7 +262,8 @@ class CreativeCarouselEffect extends CarouselEffect {
   double paintOrder(CarouselItemInfo info) {
     // Items further away from the viewer are drawn first, as the web does
     // with 3D sorting; items at the same depth stack by their distance.
-    final double depth = (_poseOf(info.delta)?.depth ?? 0) * _amount(info.delta);
+    final double depth =
+        (_poseOf(info.delta)?.depth ?? 0) * _amount(info.delta);
     return -depth - info.distance / 1000;
   }
 
