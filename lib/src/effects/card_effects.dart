@@ -75,6 +75,126 @@ class DeckCarouselEffect extends CarouselEffect {
   }
 }
 
+/// The current item lies on top of a stack that spreads to both sides: its
+/// neighbours hide behind it, smaller and paler, so only slivers of them
+/// peek out.
+class LayeredCarouselEffect extends CarouselEffect {
+  /// Creates a layered stack.
+  const LayeredCarouselEffect({
+    this.spread = 0.19,
+    this.outerSpread = 0.32,
+    this.scaleStep = 0.3,
+    this.minScale = 0.5,
+    this.fade = 0.5,
+    this.maxFade = 0.8,
+    this.fadeColor = const Color(0xFFFFFFFF),
+    this.balanceEnds = true,
+    this.viewportFraction = 0.84,
+  });
+
+  /// How far the direct neighbours sit from the current item, as a fraction
+  /// of an item's width.
+  final double spread;
+
+  /// How far the items two places away sit, as a fraction of an item's
+  /// width. Items further away wait hidden behind them.
+  final double outerSpread;
+
+  /// How much smaller each item is than the one in front of it.
+  final double scaleStep;
+
+  /// The smallest size an item shrinks to, from 0 to 1.
+  final double minScale;
+
+  /// How much paler each item is than the one in front of it, from 0 to 1.
+  final double fade;
+
+  /// The palest an item gets, from 0 to 1.
+  final double maxFade;
+
+  /// The color items fade towards. White makes them paler; the color behind
+  /// the carousel makes them sink into it.
+  final Color fadeColor;
+
+  /// Whether a carousel that does not loop moves the stack sideways near its
+  /// first and last items, so the stack stays centered while one side has
+  /// fewer items.
+  final bool balanceEnds;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  bool get shadesItems => fade > 0 && maxFade > 0;
+
+  @override
+  Color get shadeColor => fadeColor;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => 3;
+
+  @override
+  double dragExtent(CarouselLayout layout) =>
+      math.max(layout.itemMainExtent * 0.5, 1.0);
+
+  /// The distance of an item [away] places from the current one, as a
+  /// fraction of an item's width: a curve through [spread] and [outerSpread]
+  /// that stops two places away.
+  double _offset(double away) {
+    final double a = math.min(away, 2.0);
+    final double bend = (outerSpread - 2 * spread) / 2;
+    return (spread - bend) * a + bend * a * a;
+  }
+
+  double _scale(double away) =>
+      math.max(clampDouble(minScale, 0, 1), 1 - scaleStep * away);
+
+  /// How far the stack reaches to one side, as a fraction of an item's
+  /// width, when [count] items (up to 2) are there.
+  double _reach(double count) {
+    double edge(double away) => _offset(away) + _scale(away) / 2;
+    final double c = clampDouble(count, 0, 2);
+    return c <= 1
+        ? _lerp(0.5, edge(1), c)
+        : _lerp(edge(1), edge(2), c - 1);
+  }
+
+  double _balance(CarouselItemInfo info) {
+    final CarouselLayout layout = info.layout;
+    if (!balanceEnds || layout.loop || layout.itemCount < 2) {
+      return 0;
+    }
+    final double before = info.page;
+    final double after = layout.itemCount - 1 - info.page;
+    // Shift the stack so its two ends sit evenly around the middle.
+    return (_reach(before) - _reach(after)) / 2 * layout.itemMainExtent;
+  }
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final double away = d.abs();
+    if (away > 3) {
+      return CarouselItemTransform.hidden;
+    }
+    final double x =
+        d.sign * _offset(away) * info.layout.itemMainExtent + _balance(info);
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(_scale(away))
+            ..translate(x))
+          .value,
+      shade: math.min(
+        clampDouble(maxFade, 0, 1),
+        clampDouble(fade, 0, 1) * away,
+      ),
+    );
+  }
+}
+
 /// A pile of cards: the top card is thrown off to the side with a twist,
 /// like swiping a dating app, and the pile moves up.
 class TinderCarouselEffect extends CarouselEffect {

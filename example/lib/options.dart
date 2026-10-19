@@ -303,6 +303,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.scatter()',
   ),
   EffectOption(
+    'Layered',
+    EffectFamily.cards,
+    CarouselEffect.layered(),
+    'CarouselEffect.layered()',
+  ),
+  EffectOption(
     'Circle',
     EffectFamily.reveals,
     CarouselEffect.circularReveal(),

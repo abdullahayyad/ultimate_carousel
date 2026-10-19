@@ -49,6 +49,7 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('material_hero', CarouselEffect.material(weights: <int>[1, 7, 1])),
   ('deck', CarouselEffect.deck()),
   ('tinder', CarouselEffect.tinder()),
+  ('layered', CarouselEffect.layered()),
   ('fan', CarouselEffect.fan()),
   ('arc', CarouselEffect.arc()),
   ('scatter', CarouselEffect.scatter()),

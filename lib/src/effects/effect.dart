@@ -208,6 +208,20 @@ abstract class CarouselEffect {
     double viewportFraction,
   }) = DeckCarouselEffect;
 
+  /// The current item lies on top of a stack that spreads to both sides,
+  /// with slivers of its smaller, paler neighbours peeking out.
+  const factory CarouselEffect.layered({
+    double spread,
+    double outerSpread,
+    double scaleStep,
+    double minScale,
+    double fade,
+    double maxFade,
+    Color fadeColor,
+    bool balanceEnds,
+    double viewportFraction,
+  }) = LayeredCarouselEffect;
+
   /// A pile of cards whose top card is thrown off to the side with a twist.
   const factory CarouselEffect.tinder({
     int visibleCards,
@@ -318,6 +332,12 @@ abstract class CarouselEffect {
   /// Shading adds a color filter layer to every item, so effects only turn
   /// it on when they need it.
   bool get shadesItems => false;
+
+  /// The color `CarouselItemTransform.shade` tints items towards.
+  ///
+  /// Black (the default) darkens items and white washes them out. The
+  /// color's own opacity is ignored: the shade amount sets the strength.
+  Color get shadeColor => const Color(0xFF000000);
 
   /// Whether [transform] uses `CarouselItemTransform.blur`.
   ///

@@ -5,7 +5,7 @@
 [![Live demo](https://img.shields.io/badge/demo-try%20it%20live-7F5AF0)](https://abdullahayyad.github.io/ultimate_carousel/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/abdullahayyad/ultimate_carousel/blob/main/LICENSE)
 
-**Every Flutter carousel transition in one package.** 38 transitions and 15
+**Every Flutter carousel transition in one package.** 39 transitions and 15
 animated page indicators behind a single widget, with no dependencies besides
 Flutter.
 
@@ -117,10 +117,11 @@ slide with `alignment: CarouselAlignment.start` and a `viewportFraction` below
 | | | |
 |:-:|:-:|:-:|
 | ![deck](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/deck.gif)<br>`CarouselEffect.deck()` | ![tinder](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/tinder.gif)<br>`CarouselEffect.tinder()` | ![fan](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/fan.gif)<br>`CarouselEffect.fan()` |
-| ![arc](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/arc.gif)<br>`CarouselEffect.arc()` | ![scatter](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/scatter.gif)<br>`CarouselEffect.scatter()` | |
+| ![arc](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/arc.gif)<br>`CarouselEffect.arc()` | ![scatter](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/scatter.gif)<br>`CarouselEffect.scatter()` | ![layered](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/layered.gif)<br>`CarouselEffect.layered()` |
 
 Also: `arc(upward: false)` for a rainbow and `arc(tilt: false)` to keep the
-cards upright.
+cards upright. `layered(fadeColor: …)` fades the neighbours towards your
+background color instead of white.
 
 ### Reveals
 
@@ -249,7 +250,8 @@ final swing = CarouselEffect.custom(
 ```
 
 `CarouselItemTransform` can also clip, shade, blur and move the content
-inside an item. For full control, subclass `CarouselEffect` and override
+inside an item; override `shadeColor` to shade towards a color other than
+black. For full control, subclass `CarouselEffect` and override
 `paintOrder`, `itemsPerSide` or `decorate`. To make a new reveal, subclass
 `RevealCarouselEffect` and return the visible shape from `revealPath`.
 
@@ -283,6 +285,7 @@ ideas.
 | [flutter_3d_carousel](https://pub.dev/packages/flutter_3d_carousel), [flutter_gallery_3d](https://pub.dev/packages/flutter_gallery_3d) | 3D ring | MIT |
 | [coverflow_carousel](https://pub.dev/packages/coverflow_carousel), [overlapped_carousel](https://pub.dev/packages/overlapped_carousel) | cover flow, overlap | BSD-3-Clause, MIT |
 | [stacked_card_carousel](https://pub.dev/packages/stacked_card_carousel), [flutter_card_swiper](https://pub.dev/packages/flutter_card_swiper), [appinio_swiper](https://pub.dev/packages/appinio_swiper) | card decks | BSD-3-Clause, MIT |
+| [carousel_page_view](https://pub.dev/packages/carousel_page_view) | layered stack | BSD-3-Clause |
 | [fan_carousel_image_slider](https://pub.dev/packages/fan_carousel_image_slider), [curved_carousel](https://pub.dev/packages/curved_carousel), [flywheel_carousel](https://pub.dev/packages/flywheel_carousel) | fan and arc | MIT, BSD-3-Clause |
 | [turn_page_transition](https://pub.dev/packages/turn_page_transition), [page_turn](https://pub.dev/packages/page_turn) | page turn | BSD-3-Clause, MIT |
 | [shader_transitions](https://pub.dev/packages/shader_transitions), [intro_views_flutter](https://pub.dev/packages/intro_views_flutter) | clock, blocks and circle reveals | MIT |

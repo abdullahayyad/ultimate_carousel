@@ -1186,7 +1186,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       final int alpha = (clampDouble(transform.shade, 0, 1) * 255).round();
       child = ColorFiltered(
         colorFilter: ColorFilter.mode(
-          Color.fromARGB(alpha, 0, 0, 0),
+          widget.effect.shadeColor.withAlpha(alpha),
           BlendMode.srcATop,
         ),
         child: child,

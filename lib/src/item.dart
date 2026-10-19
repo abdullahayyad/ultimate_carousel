@@ -207,7 +207,8 @@ class CarouselItemTransform {
   /// The item's opacity, from 0 (invisible) to 1.
   final double opacity;
 
-  /// Darkens the item, from 0 (not at all) to 1 (black).
+  /// Tints the item with the effect's `shadeColor`, from 0 (not at all) to 1
+  /// (fully). The default color is black, so the item darkens.
   ///
   /// Only effects whose `shadesItems` is true can shade items.
   final double shade;

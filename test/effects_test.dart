@@ -47,6 +47,11 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('material hero', CarouselEffect.material(weights: <int>[1, 7, 1])),
   ('deck', CarouselEffect.deck()),
   ('tinder', CarouselEffect.tinder()),
+  ('layered', CarouselEffect.layered()),
+  (
+    'layered, darker',
+    CarouselEffect.layered(fadeColor: Color(0xFF000000), balanceEnds: false),
+  ),
   ('fan', CarouselEffect.fan()),
   ('arc', CarouselEffect.arc()),
   ('arc down, upright', CarouselEffect.arc(upward: false, tilt: false)),
@@ -203,6 +208,124 @@ void main() {
       expect(path.contains(const Offset(-60, 100)), isFalse);
       expect(path.contains(const Offset(-60, -100)), isFalse);
     }
+  });
+
+  test('the layered stack keeps neighbours behind the current item', () {
+    const LayeredCarouselEffect effect = LayeredCarouselEffect();
+    const CarouselLayout layout = CarouselLayout(
+      viewportSize: Size(375, 300),
+      itemSize: Size(315, 300),
+      spacing: 0,
+      itemCount: 6,
+      loop: true,
+      alignment: CarouselAlignment.center,
+      scrollDirection: Axis.horizontal,
+      reversed: false,
+    );
+    CarouselItemTransform at(double delta) => effect.transform(
+          CarouselItemInfo(
+            delta: delta,
+            index: 0,
+            virtualIndex: 0,
+            page: -delta,
+            layout: layout,
+          ),
+        );
+    double centerX(CarouselItemTransform transform) =>
+        MatrixUtils.transformPoint(transform.matrix!, Offset.zero).dx;
+    double scaleOf(CarouselItemTransform transform) =>
+        (MatrixUtils.transformPoint(transform.matrix!, const Offset(100, 0))
+                .dx -
+            centerX(transform)) /
+        100;
+
+    expect(centerX(at(1)), closeTo(0.19 * 315, 1e-6));
+    expect(centerX(at(-1)), closeTo(-0.19 * 315, 1e-6));
+    expect(centerX(at(2)), closeTo(0.32 * 315, 1e-6));
+    // Items further away wait hidden behind the ones two places away.
+    expect(centerX(at(2.6)), closeTo(0.32 * 315, 1e-6));
+    expect(scaleOf(at(1)), closeTo(0.7, 1e-6));
+    expect(scaleOf(at(2)), closeTo(0.5, 1e-6));
+    expect(scaleOf(at(2.6)), closeTo(0.5, 1e-6));
+    expect(at(1).shade, closeTo(0.5, 1e-9));
+    expect(at(2).shade, closeTo(0.8, 1e-9));
+    expect(at(3.2).visible, isFalse);
+  });
+
+  test('the layered stack stays centered at the ends of a carousel', () {
+    const LayeredCarouselEffect effect = LayeredCarouselEffect();
+    const CarouselLayout layout = CarouselLayout(
+      viewportSize: Size(375, 300),
+      itemSize: Size(315, 300),
+      spacing: 0,
+      itemCount: 7,
+      loop: false,
+      alignment: CarouselAlignment.center,
+      scrollDirection: Axis.horizontal,
+      reversed: false,
+    );
+    double shiftAt(double page) {
+      final CarouselItemTransform transform = effect.transform(
+        CarouselItemInfo(
+          delta: 0,
+          index: 0,
+          virtualIndex: 0,
+          page: page,
+          layout: layout,
+        ),
+      );
+      return MatrixUtils.transformPoint(transform.matrix!, Offset.zero).dx;
+    }
+
+    // With two items on each side, nothing moves.
+    expect(shiftAt(3), closeTo(0, 1e-9));
+    // At the first item the stack only reaches right, so it moves left; the
+    // last item mirrors it.
+    expect(shiftAt(0), lessThan(-5));
+    expect(shiftAt(6), closeTo(-shiftAt(0), 1e-9));
+    double previous = shiftAt(0);
+    for (int step = 1; step <= 60; step++) {
+      final double now = shiftAt(step / 20);
+      expect((now - previous).abs(), lessThan(1), reason: 'page ${step / 20}');
+      previous = now;
+    }
+  });
+
+  testWidgets('the layered stack fades neighbours towards its color', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 375,
+            height: 200,
+            child: UltimateCarousel(
+              effect: const CarouselEffect.layered(),
+              initialPage: 2,
+              children: <Widget>[
+                for (int i = 0; i < 5; i++)
+                  const ColoredBox(color: Color(0xFF2196F3)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final List<ColorFilter> filters = <ColorFilter>[
+      for (final ColorFiltered widget
+          in tester.widgetList<ColorFiltered>(find.byType(ColorFiltered)))
+        widget.colorFilter,
+    ];
+    expect(
+      filters,
+      contains(
+        ColorFilter.mode(
+          const Color(0xFFFFFFFF).withAlpha(128),
+          BlendMode.srcATop,
+        ),
+      ),
+    );
   });
 
   for (final (String name, CarouselEffect effect) in allEffects) {
