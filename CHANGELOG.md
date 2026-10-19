@@ -5,10 +5,11 @@
   layouts, snapping physics, keyboard, mouse wheel and screen reader support.
 * `UltimateCarouselController` to move, jump, scrub (`jumpTo`) and control
   autoplay.
-* 39 transitions:
+* 41 transitions:
   * Slides and fades: slide, fade (cross fade, zoom), enlarge (scale, height,
     zoom), zoom out, zoom in, depth, parallax, stack, accordion, rotate,
-    foreground to background, background to foreground, focus and overlap.
+    foreground to background, background to foreground, focus, overlap,
+    uncover and skew.
   * 3D: cube (outside and inside), flip, cover flow, tablet, ring (facing
     out or at the viewer, tilted), wheel, cylinder, helix, page turn and
     tunnel.

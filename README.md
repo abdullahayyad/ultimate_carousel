@@ -5,7 +5,7 @@
 [![Live demo](https://img.shields.io/badge/demo-try%20it%20live-7F5AF0)](https://abdullahayyad.github.io/ultimate_carousel/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/abdullahayyad/ultimate_carousel/blob/main/LICENSE)
 
-**Every Flutter carousel transition in one package.** 39 transitions and 15
+**Every Flutter carousel transition in one package.** 41 transitions and 15
 animated page indicators behind a single widget, with no dependencies besides
 Flutter.
 
@@ -80,10 +80,11 @@ Pass any of these as `effect:`. Each one has options; the API docs list them.
 | ![zoom out](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/zoom_out.gif)<br>`CarouselEffect.zoomOut()` | ![depth](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/depth.gif)<br>`CarouselEffect.depth()` | ![parallax](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/parallax.gif)<br>`CarouselEffect.parallax()` |
 | ![stack](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/stack.gif)<br>`CarouselEffect.stack()` | ![accordion](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/accordion.gif)<br>`CarouselEffect.accordion()` | ![rotate](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/rotate.gif)<br>`CarouselEffect.rotate()` |
 | ![foreground to background](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/foreground_to_background.gif)<br>`CarouselEffect.foregroundToBackground()` | ![background to foreground](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/background_to_foreground.gif)<br>`CarouselEffect.backgroundToForeground()` | ![focus](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/focus.gif)<br>`CarouselEffect.focus()` |
-| ![overlap](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/overlap.gif)<br>`CarouselEffect.overlap()` | | |
+| ![overlap](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/overlap.gif)<br>`CarouselEffect.overlap()` | ![uncover](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/uncover.gif)<br>`CarouselEffect.uncover()` | ![skew](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/skew.gif)<br>`CarouselEffect.skew()` |
 
 Also: `fade(crossFade: true)`, `enlarge(strategy: CarouselEnlargeStrategy.height)`
-and `.zoom`, `zoomIn()` and `rotate(fromTop: true)`.
+and `.zoom`, `zoomIn()`, `rotate(fromTop: true)` and `uncover(parallax: 0)`,
+where the next item waits still underneath.
 
 ### 3D
 

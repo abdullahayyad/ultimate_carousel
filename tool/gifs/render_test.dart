@@ -30,6 +30,8 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('background_to_foreground', CarouselEffect.backgroundToForeground()),
   ('focus', CarouselEffect.focus()),
   ('overlap', CarouselEffect.overlap()),
+  ('uncover', CarouselEffect.uncover()),
+  ('skew', CarouselEffect.skew()),
   ('cube', CarouselEffect.cube()),
   ('cube_inside', CarouselEffect.cube(inside: true)),
   ('flip', CarouselEffect.flip()),

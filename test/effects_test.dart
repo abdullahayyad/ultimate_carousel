@@ -29,6 +29,9 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('background to foreground', CarouselEffect.backgroundToForeground()),
   ('focus', CarouselEffect.focus()),
   ('overlap', CarouselEffect.overlap()),
+  ('uncover', CarouselEffect.uncover()),
+  ('uncover, still', CarouselEffect.uncover(parallax: 0, shade: 0)),
+  ('skew', CarouselEffect.skew()),
   ('cube', CarouselEffect.cube()),
   ('cube inside', CarouselEffect.cube(inside: true)),
   ('flip', CarouselEffect.flip()),
@@ -289,6 +292,39 @@ void main() {
       expect((now - previous).abs(), lessThan(1), reason: 'page ${step / 20}');
       previous = now;
     }
+  });
+
+  test('uncover slides the current item off over the next one', () {
+    const UncoverCarouselEffect effect = UncoverCarouselEffect();
+    double x(double delta) => MatrixUtils.transformPoint(
+          effect.transform(_info(effect, delta)).matrix!,
+          Offset.zero,
+        ).dx;
+
+    // Halfway through, the leaving item has gone half a slot and the waiting
+    // one moves at 0.3 of that speed, still a little dark.
+    expect(x(-0.5), closeTo(-200, 1e-9));
+    expect(x(0.5), closeTo(0.5 * 400 * 0.3, 1e-9));
+    expect(effect.transform(_info(effect, 0.5)).shade, closeTo(0.15, 1e-9));
+    expect(
+      effect.paintOrder(_info(effect, -0.5)),
+      greaterThan(effect.paintOrder(_info(effect, 0.5))),
+    );
+  });
+
+  test('skew leans neighbours away from the middle', () {
+    const SkewCarouselEffect effect = SkewCarouselEffect();
+    double lean(double delta) {
+      final Matrix4 matrix = effect.transform(_info(effect, delta)).matrix!;
+      final Offset top = MatrixUtils.transformPoint(matrix, const Offset(0, -100));
+      final Offset bottom =
+          MatrixUtils.transformPoint(matrix, const Offset(0, 100));
+      return top.dx - bottom.dx;
+    }
+
+    expect(lean(1), greaterThan(10));
+    expect(lean(-1), lessThan(-10));
+    expect(lean(0), closeTo(0, 1e-9));
   });
 
   testWidgets('the layered stack fades neighbours towards its color', (

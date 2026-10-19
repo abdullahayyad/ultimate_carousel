@@ -101,6 +101,18 @@ abstract class CarouselEffect {
     double viewportFraction,
   }) = OverlapCarouselEffect;
 
+  /// The current item slides away on top and uncovers the next one waiting
+  /// underneath.
+  const factory CarouselEffect.uncover({double parallax, double shade}) =
+      UncoverCarouselEffect;
+
+  /// Items lean as they slide and straighten up in the middle.
+  const factory CarouselEffect.skew({
+    double angle,
+    double sideScale,
+    double viewportFraction,
+  }) = SkewCarouselEffect;
+
   // ---------------------------------------------------------------------------
   // 3D
 

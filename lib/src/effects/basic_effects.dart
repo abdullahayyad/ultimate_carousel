@@ -536,3 +536,84 @@ class BackgroundToForegroundCarouselEffect extends CarouselEffect {
     );
   }
 }
+
+/// The current item slides away on top and uncovers the next one, which
+/// waits underneath, moving slowly and brightening as it comes forward.
+class UncoverCarouselEffect extends CarouselEffect {
+  /// Creates an uncover effect.
+  const UncoverCarouselEffect({this.parallax = 0.3, this.shade = 0.3});
+
+  /// How fast the waiting item moves compared with the one leaving, from 0
+  /// (it stays still) to 1 (an ordinary slide).
+  final double parallax;
+
+  /// How dark the waiting item is before it is uncovered, from 0 to 1.
+  final double shade;
+
+  @override
+  bool get shadesItems => shade > 0;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => 1;
+
+  @override
+  double paintOrder(CarouselItemInfo info) => -info.delta;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    if (d <= -1 || d >= 1) {
+      return CarouselItemTransform.hidden;
+    }
+    final double slot = info.layout.slotExtent;
+    if (d <= 0) {
+      return CarouselItemTransform(
+        matrix: Matrix4.translationValues(d * slot, 0, 0),
+      );
+    }
+    return CarouselItemTransform(
+      matrix: Matrix4.translationValues(
+        d * slot * clampDouble(parallax, 0, 1),
+        0,
+        0,
+      ),
+      shade: d * clampDouble(shade, 0, 1),
+    );
+  }
+}
+
+/// Items lean as they slide, like cards dealt quickly across a table, and
+/// straighten up in the middle.
+class SkewCarouselEffect extends CarouselEffect {
+  /// Creates a skew effect.
+  const SkewCarouselEffect({
+    this.angle = 0.25,
+    this.sideScale = 0.9,
+    this.viewportFraction = 0.75,
+  });
+
+  /// How far the neighbours lean, in radians.
+  final double angle;
+
+  /// The scale of the neighbours.
+  final double sideScale;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double c = info.clampedDelta;
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            // Items lean away from the middle, tops first.
+            ..skew(-c * angle)
+            ..scale(_lerp(1, sideScale, c.abs()))
+            ..translate(info.delta * info.layout.slotExtent))
+          .value,
+    );
+  }
+}

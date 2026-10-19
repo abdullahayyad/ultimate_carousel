@@ -117,6 +117,18 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.overlap()',
   ),
   EffectOption(
+    'Uncover',
+    EffectFamily.slides,
+    CarouselEffect.uncover(),
+    'CarouselEffect.uncover()',
+  ),
+  EffectOption(
+    'Skew',
+    EffectFamily.slides,
+    CarouselEffect.skew(),
+    'CarouselEffect.skew()',
+  ),
+  EffectOption(
     'Zoom out',
     EffectFamily.slides,
     CarouselEffect.zoomOut(),

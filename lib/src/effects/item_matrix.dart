@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 /// Builds an item transform step by step, in carousel space.
@@ -86,6 +88,17 @@ class ItemMatrix {
       return;
     }
     _applyAround(Matrix4.rotationZ(radians), pivot);
+  }
+
+  /// Slants the item along the scroll direction, like italic text.
+  ///
+  /// A positive angle moves its bottom edge forwards (towards the next item)
+  /// and its top edge backwards.
+  void skew(double radians) {
+    if (radians == 0) {
+      return;
+    }
+    _apply(Matrix4.identity()..setEntry(0, 1, math.tan(radians)));
   }
 
   /// Adds perspective, so things further away (positive z) look smaller.
