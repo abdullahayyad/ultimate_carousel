@@ -316,7 +316,8 @@ void main() {
     const SkewCarouselEffect effect = SkewCarouselEffect();
     double lean(double delta) {
       final Matrix4 matrix = effect.transform(_info(effect, delta)).matrix!;
-      final Offset top = MatrixUtils.transformPoint(matrix, const Offset(0, -100));
+      final Offset top =
+          MatrixUtils.transformPoint(matrix, const Offset(0, -100));
       final Offset bottom =
           MatrixUtils.transformPoint(matrix, const Offset(0, 100));
       return top.dx - bottom.dx;
