@@ -479,8 +479,7 @@ class ExpandingCardsCarouselEffect extends CarouselEffect {
   bool get uniqueItems => true;
 
   @override
-  int? itemsPerSide(CarouselLayout layout) =>
-      math.max(1, layout.itemCount - 1);
+  int? itemsPerSide(CarouselLayout layout) => math.max(1, layout.itemCount - 1);
 
   /// The widths of a wide and a narrow panel.
   (double, double) _widths(CarouselLayout layout) {
@@ -512,7 +511,8 @@ class ExpandingCardsCarouselEffect extends CarouselEffect {
         : clampDouble(info.page, 0, count - 1.0);
     final int from = page.floor();
     final double t = page - from;
-    final int to = layout.loop ? (from + 1) % count : math.min(from + 1, count - 1);
+    final int to =
+        layout.loop ? (from + 1) % count : math.min(from + 1, count - 1);
     double widthOf(int index) {
       double active = 0;
       if (index == from) {

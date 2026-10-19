@@ -519,10 +519,11 @@ void main() {
       1,
     );
     double moved() => tester
-        .widgetList<FractionalTranslation>(find.byType(FractionalTranslation))
-        .fold(0.0, (double sum, FractionalTranslation widget) {
-      return sum + widget.translation.distance;
-    });
+            .widgetList<FractionalTranslation>(
+                find.byType(FractionalTranslation))
+            .fold(0.0, (double sum, FractionalTranslation widget) {
+          return sum + widget.translation.distance;
+        });
     expect(moved(), 0);
     controller.jumpTo(0.6);
     await tester.pump();

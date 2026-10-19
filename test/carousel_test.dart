@@ -271,8 +271,7 @@ void main() {
   ) async {
     final UltimateCarouselController controller = UltimateCarouselController();
     addTearDown(controller.dispose);
-    final List<CarouselPageChangeReason> reasons =
-        <CarouselPageChangeReason>[];
+    final List<CarouselPageChangeReason> reasons = <CarouselPageChangeReason>[];
     await tester.pumpWidget(
       _host(
         UltimateCarousel(
