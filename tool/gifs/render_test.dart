@@ -356,9 +356,8 @@ Widget _tile(
         itemCount: 6,
         enableKeyboard: false,
         clipBehavior: Clip.none,
-        scrollDirection: _verticalTiles.contains(name)
-            ? Axis.vertical
-            : Axis.horizontal,
+        scrollDirection:
+            _verticalTiles.contains(name) ? Axis.vertical : Axis.horizontal,
         itemBuilder: (BuildContext context, int index) =>
             _verticalTiles.contains(name)
                 ? Center(

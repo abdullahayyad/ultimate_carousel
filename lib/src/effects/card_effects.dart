@@ -645,7 +645,8 @@ class DealCarouselEffect extends CarouselEffect {
     final double travel = clampDouble(-info.delta, 0, 1);
     // The glint sweeps across the card while it flips and is gone by the
     // time the card lands, so cards at rest show no trace of it.
-    final double strength = clampDouble(gloss, 0, 1) * math.sin(math.pi * travel);
+    final double strength =
+        clampDouble(gloss, 0, 1) * math.sin(math.pi * travel);
     final double center = -0.2 + 1.4 * travel;
     return ShaderMask(
       blendMode: BlendMode.srcATop,
@@ -750,7 +751,8 @@ class WalletCarouselEffect extends CarouselEffect {
       return CarouselItemTransform(
         matrix: (ItemMatrix()
               ..scale(fit)
-              ..translate(frontX + d * (layout.slotExtent + width * 0.1), frontY))
+              ..translate(
+                  frontX + d * (layout.slotExtent + width * 0.1), frontY))
             .value,
       );
     }
