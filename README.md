@@ -360,7 +360,7 @@ This is the API of
 so its effects builders work here unchanged. Its `itemCountBefore` and
 `itemCountAfter` are `itemsBefore` and `itemsAfter`, `scrollSpeed` is
 `dragSpeed`, `onSettledItemChanged` is `onSettled` and `tapToSelect` is
-`animateToTappedItem`. To use
+`animateToTappedItem`; its default depth order is `forward`. To use
 [flutter_animate](https://pub.dev/packages/flutter_animate) effects, map the
 ratio onto the animation:
 

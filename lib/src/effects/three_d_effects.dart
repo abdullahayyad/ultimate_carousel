@@ -624,10 +624,10 @@ class TabletCarouselEffect extends CarouselEffect {
   }
 }
 
-/// Items stand in a row like records in a crate, seen from the front. The
-/// items ahead lie tipped towards the viewer and stand up one by one as
-/// they arrive; the items already passed lean back into the crate, smaller
-/// and darker.
+/// Items stand in a row like records in a crate, seen from the front: the
+/// ones passed lean back into the crate, smaller and darker, and the ones
+/// ahead lie tipped towards the viewer, flatter the further ahead they are,
+/// so only the top of each item shows above the next one.
 ///
 /// It is made for vertical carousels, where flipping through it looks like
 /// digging through records. This is the record box demo of the
@@ -636,21 +636,16 @@ class CrateCarouselEffect extends CarouselEffect {
   /// Creates a crate.
   const CrateCarouselEffect({
     this.visibleItems = 4,
-    this.gap = 0.32,
-    this.lean = 0.3,
-    this.perspective = 0.0025,
-    this.shade = 0.6,
-    this.viewportFraction = 0.5,
+    this.lean = 0.45,
+    this.perspective = 0.002,
+    this.shade = 0.55,
+    this.viewportFraction = 0.42,
   });
 
   /// How many items show on each side of the current one.
   final int visibleItems;
 
-  /// How far apart the items ahead stand, as a fraction of an item's
-  /// length. The items behind stand closer together.
-  final double gap;
-
-  /// How far the items behind lean back, in radians.
+  /// How far the furthest item behind leans back, in radians.
   final double lean;
 
   /// The strength of the 3D perspective.
@@ -664,6 +659,8 @@ class CrateCarouselEffect extends CarouselEffect {
 
   int get _visible => math.max(1, visibleItems);
 
+  double get _range => _visible + 0.5;
+
   @override
   double get defaultViewportFraction => viewportFraction;
 
@@ -673,47 +670,56 @@ class CrateCarouselEffect extends CarouselEffect {
   @override
   int? itemsPerSide(CarouselLayout layout) => _visible + 1;
 
-  // Items move a fraction of their length per step, so a drag of the same
-  // length moves one step.
+  // A drag the length of one step moves one item.
   @override
   double dragExtent(CarouselLayout layout) =>
-      math.max(layout.itemMainExtent * math.max(gap, 0.05), 1.0);
+      math.max((_place(1 / _range, layout) - _place(0, layout)).abs(), 1.0);
 
   // The items ahead are nearer the viewer.
   @override
   double paintOrder(CarouselItemInfo info) => info.delta;
 
+  /// Where an item stands along the carousel for its place among the items
+  /// on show, from -1 (the furthest behind) to 1 (the furthest ahead):
+  /// bunched up at the back and spreading out towards the front, as if seen
+  /// from above.
+  static double _place(double place, CarouselLayout layout) {
+    final double t = (place + 1) / 2;
+    final double length = layout.itemMainExtent;
+    final double room = math.max(0.0, layout.viewportMainExtent - length);
+    return room * Curves.easeIn.transform(clampDouble(t, 0, 1)) +
+        0.5 * t * length;
+  }
+
   @override
   CarouselItemTransform transform(CarouselItemInfo info) {
     final double d = info.delta;
-    final double range = _visible + 0.5;
-    if (d.abs() > range) {
+    if (d.abs() > _range) {
       return CarouselItemTransform.hidden;
     }
-    final double length = info.layout.itemMainExtent;
+    final CarouselLayout layout = info.layout;
+    final double place = d / _range;
+    final double offset = _place(place, layout) - _place(0, layout);
     if (d >= 0) {
-      // Ahead: tipped towards the viewer, more the further ahead, until the
-      // last one lies flat.
-      final double ahead = d / range;
+      // Ahead: tipped towards the viewer, until the last one lies flat.
       return CarouselItemTransform(
         matrix: (ItemMatrix()
-              ..rotateY(-math.pi / 2 * ahead)
-              ..translate(d * gap * length)
+              ..rotateY(-math.pi / 2 * place)
+              ..translate(offset)
               ..perspective(perspective))
             .value,
       );
     }
-    // Behind: leaning back, closer together, smaller and darker.
-    final double behind = -d / range;
+    final double behind = -place;
     return CarouselItemTransform(
       matrix: (ItemMatrix()
-            ..rotateY(lean * math.min(1.0, -d))
-            ..scale(1 - 0.3 * behind)
-            ..translate(d * gap * 0.4 * length)
+            ..rotateY(lean * behind)
+            ..scale(1 - 0.25 * behind)
+            ..translate(offset)
             ..perspective(perspective))
           .value,
       shade: clampDouble(shade, 0, 1) * behind,
-      opacity: clampDouble(range + d, 0, 1),
+      opacity: clampDouble(_range + d, 0, 1),
     );
   }
 }

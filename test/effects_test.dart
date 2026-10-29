@@ -645,7 +645,7 @@ void main() {
       }
     }
     // The front card slides out of the carousel.
-    expect(center(-1).dx, lessThan(-layout.viewportSize.width / 2));
+    expect(center(-0.95).dx, lessThan(-layout.viewportSize.width / 2));
   });
 
   test('the crate tips the items ahead and leans the ones behind back', () {

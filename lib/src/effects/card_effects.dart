@@ -562,7 +562,7 @@ class DealCarouselEffect extends CarouselEffect {
     this.visibleCards = 3,
     this.tilt = 0.05,
     this.shade = 0.15,
-    this.flipAngle = 0.55,
+    this.flipAngle = 0.8,
     this.distance = 1.3,
     this.gloss = 0.5,
     this.perspective = 0.002,

@@ -219,7 +219,6 @@ abstract class CarouselEffect {
   /// vertical carousels.
   const factory CarouselEffect.crate({
     int visibleItems,
-    double gap,
     double lean,
     double perspective,
     double shade,

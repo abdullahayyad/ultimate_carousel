@@ -109,6 +109,11 @@ Widget _waveBuilder(int index, double ratio, Widget child) {
 /// Effects shown as a vertical carousel of square cards.
 const Set<String> _verticalTiles = <String>{'crate'};
 
+/// Tiles that are not the usual size.
+const Map<String, Size> _tileSizes = <String, Size>{
+  'crate': Size(220, 340),
+};
+
 /// Room around the carousel in a tile, for effects that need more than the
 /// default.
 const Map<String, EdgeInsets> _tilePadding = <String, EdgeInsets>{
@@ -410,7 +415,11 @@ void main() {
       addTearDown(controller.dispose);
       final GlobalKey key = GlobalKey();
       await tester.pumpWidget(
-        _frame(key, _tileSize, _tile(name, effect, controller)),
+        _frame(
+          key,
+          _tileSizes[name] ?? _tileSize,
+          _tile(name, effect, controller),
+        ),
       );
       await tester.pump();
       for (int frame = 0; frame < _frameCount; frame++) {
