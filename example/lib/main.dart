@@ -63,7 +63,10 @@ class _GalleryPageState extends State<GalleryPage> {
       ..writeln()
       ..writeln('UltimateCarousel(')
       ..writeln('  controller: controller,')
-      ..writeln('  effect: const ${_effect.code},');
+      ..writeln(
+        '  effect: ${_effect.isConst ? 'const ' : ''}'
+        '${_effect.code.replaceAll('\n', '\n  ')},',
+      );
     if (_loop) {
       code.writeln('  loop: true,');
     }

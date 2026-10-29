@@ -331,6 +331,73 @@ void main() {
     expect(controller.isAutoPlaying, isFalse);
   });
 
+  testWidgets('dragSpeed scales how far a drag moves the carousel', (
+    WidgetTester tester,
+  ) async {
+    Future<double> pageDuringDrag(double dragSpeed) async {
+      final UltimateCarouselController controller =
+          UltimateCarouselController();
+      await tester.pumpWidget(
+        _host(
+          UltimateCarousel(
+            controller: controller,
+            dragSpeed: dragSpeed,
+            children: _slides(5),
+          ),
+        ),
+      );
+      final TestGesture gesture = await tester.startGesture(
+        tester.getCenter(find.byType(UltimateCarousel)),
+      );
+      for (int i = 0; i < 10; i++) {
+        await gesture.moveBy(const Offset(-10, 0));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final double page = controller.realPage;
+      await gesture.up();
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      return page;
+    }
+
+    final double normal = await pageDuringDrag(1);
+    final double fast = await pageDuringDrag(2);
+    expect(normal, greaterThan(0.1));
+    expect(fast, closeTo(normal * 2, 0.01));
+  });
+
+  testWidgets('onSettled reports where the carousel comes to rest', (
+    WidgetTester tester,
+  ) async {
+    final List<int> settled = <int>[];
+    final UltimateCarouselController controller = UltimateCarouselController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      _host(
+        UltimateCarousel(
+          controller: controller,
+          onSettled: settled.add,
+          children: _slides(5),
+        ),
+      ),
+    );
+    expect(settled, isEmpty);
+    controller.animateToPage(2);
+    await tester.pump(const Duration(milliseconds: 100));
+    // Still moving.
+    expect(settled, isEmpty);
+    await tester.pumpAndSettle();
+    expect(settled, <int>[2]);
+    await tester.drag(find.byType(UltimateCarousel), const Offset(-250, 0));
+    await tester.pumpAndSettle();
+    expect(settled, <int>[2, 3]);
+    // Nothing moved, so nothing new comes to rest.
+    controller.jumpToPage(3);
+    await tester.pump();
+    expect(settled, <int>[2, 3]);
+  });
+
   test('scroll autoplay settings keep their speed', () {
     const CarouselAutoPlay scroll = CarouselAutoPlay.scroll(speed: 30);
     expect(scroll.speed, 30);

@@ -19,7 +19,10 @@ enum EffectFamily {
   reveals('Reveals'),
 
   /// Swiper's creative effect demos.
-  creative('Creative');
+  creative('Creative'),
+
+  /// Looks built from widgets with `CarouselEffect.builder`.
+  builder('Builder');
 
   const EffectFamily(this.label);
 
@@ -36,6 +39,7 @@ class EffectOption {
     this.effect,
     this.code, {
     this.spacing = 0,
+    this.isConst = true,
   });
 
   /// The chip label.
@@ -52,6 +56,9 @@ class EffectOption {
 
   /// The gap between items for this effect.
   final double spacing;
+
+  /// Whether [code] can be written with `const` in front of it.
+  final bool isConst;
 }
 
 /// Every transition in the gallery.
@@ -240,6 +247,28 @@ const List<EffectOption> effectOptions = <EffectOption>[
     'CarouselEffect.ring(faceViewer: true, tilt: 0.35)',
   ),
   EffectOption(
+    'Ring (orbit)',
+    EffectFamily.threeD,
+    CarouselEffect.ring(
+      itemsOnRing: 7,
+      faceViewer: true,
+      tilt: 0.5,
+      perspective: 0.003,
+      blur: 5,
+      fade: 0.5,
+      viewportFraction: 0.32,
+    ),
+    'CarouselEffect.ring(\n'
+        '  itemsOnRing: 7,\n'
+        '  faceViewer: true,\n'
+        '  tilt: 0.5,\n'
+        '  perspective: 0.003,\n'
+        '  blur: 5,\n'
+        '  fade: 0.5,\n'
+        '  viewportFraction: 0.32,\n'
+        ')',
+  ),
+  EffectOption(
     'Wheel',
     EffectFamily.threeD,
     CarouselEffect.wheel(),
@@ -268,6 +297,12 @@ const List<EffectOption> effectOptions = <EffectOption>[
     EffectFamily.threeD,
     CarouselEffect.tunnel(),
     'CarouselEffect.tunnel()',
+  ),
+  EffectOption(
+    'Crate',
+    EffectFamily.threeD,
+    CarouselEffect.crate(),
+    'CarouselEffect.crate()',
   ),
   EffectOption(
     'Multi-browse',
@@ -322,6 +357,18 @@ const List<EffectOption> effectOptions = <EffectOption>[
     EffectFamily.cards,
     CarouselEffect.scatter(),
     'CarouselEffect.scatter()',
+  ),
+  EffectOption(
+    'Deal',
+    EffectFamily.cards,
+    CarouselEffect.deal(),
+    'CarouselEffect.deal()',
+  ),
+  EffectOption(
+    'Wallet',
+    EffectFamily.cards,
+    CarouselEffect.wallet(),
+    'CarouselEffect.wallet()',
   ),
   EffectOption(
     'Layered',
@@ -431,7 +478,35 @@ const List<EffectOption> effectOptions = <EffectOption>[
     CreativeCarouselEffect.door(),
     'CreativeCarouselEffect.door()',
   ),
+  EffectOption(
+    'Wave',
+    EffectFamily.builder,
+    CarouselEffect.builder(builder: waveBuilder, viewportFraction: 0.45),
+    'CarouselEffect.builder(\n'
+        '  viewportFraction: 0.45,\n'
+        '  builder: (index, ratio, child) => FractionalTranslation(\n'
+        '    translation: Offset(ratio * 1.6, ratio.abs() * 0.15),\n'
+        '    child: Transform.scale(\n'
+        '      scale: 1 - ratio.abs() * 0.4,\n'
+        '      child: Opacity(opacity: 1 - ratio.abs() * 0.6, child: child),\n'
+        '    ),\n'
+        '  ),\n'
+        ')',
+    isConst: false,
+  ),
 ];
+
+/// The look of the "Wave" option, built from plain widgets: items spread out
+/// to the sides and dip down, shrinking and fading as they go.
+Widget waveBuilder(int index, double ratio, Widget child) {
+  return FractionalTranslation(
+    translation: Offset(ratio * 1.6, ratio.abs() * 0.15),
+    child: Transform.scale(
+      scale: 1 - ratio.abs() * 0.4,
+      child: Opacity(opacity: 1 - ratio.abs() * 0.6, child: child),
+    ),
+  );
+}
 
 /// One indicator the gallery can show.
 class IndicatorOption {

@@ -550,3 +550,219 @@ class ExpandingCardsCarouselEffect extends CarouselEffect {
     );
   }
 }
+
+/// A neat pile of cards whose top card flips over as it is dealt off to the
+/// side, catching the light on the way; the cards below lie a little askew
+/// and in shadow until their turn comes.
+///
+/// This is the card deck demo of the flutter_custom_carousel package.
+class DealCarouselEffect extends CarouselEffect {
+  /// Creates a dealt pile.
+  const DealCarouselEffect({
+    this.visibleCards = 3,
+    this.tilt = 0.05,
+    this.shade = 0.15,
+    this.flipAngle = 0.55,
+    this.distance = 1.3,
+    this.gloss = 0.5,
+    this.perspective = 0.002,
+    this.viewportFraction = 0.6,
+  });
+
+  /// How many cards show under the top one.
+  final int visibleCards;
+
+  /// How far each card under the top one is turned, in radians.
+  final double tilt;
+
+  /// How much darker each card under the top one is, from 0 to 1.
+  final double shade;
+
+  /// How far the dealt card turns over, in radians.
+  final double flipAngle;
+
+  /// How far the dealt card travels, in card widths.
+  final double distance;
+
+  /// How bright the glint that crosses the dealt card is, from 0 (none) to
+  /// 1. The glint draws every card through a shader mask, so turn it off on
+  /// slow devices.
+  final double gloss;
+
+  /// The strength of the 3D perspective of the flip.
+  final double perspective;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  int get _cards => math.max(1, visibleCards);
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  bool get shadesItems => shade > 0;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => _cards + 1;
+
+  @override
+  double paintOrder(CarouselItemInfo info) =>
+      info.delta <= 0 ? 1 - info.delta : -info.delta;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final int cards = _cards;
+    if (d <= -1 || d > cards + 1) {
+      return CarouselItemTransform.hidden;
+    }
+    if (d <= 0) {
+      // The top card turns its trailing edge up towards the viewer while it
+      // is dealt off towards the side the user swiped.
+      final double travel = -d;
+      return CarouselItemTransform(
+        matrix: (ItemMatrix()
+              ..rotateY(flipAngle * travel)
+              ..translate(-travel * distance * info.layout.itemMainExtent)
+              ..perspective(perspective))
+            .value,
+      );
+    }
+    final double depth = math.min(d, cards.toDouble());
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()..rotateZ(tilt * depth)).value,
+      shade: clampDouble(shade * depth, 0, 0.9),
+      opacity: clampDouble(cards + 1 - d, 0, 1),
+    );
+  }
+
+  @override
+  Widget decorate(BuildContext context, Widget child, CarouselItemInfo info) {
+    if (gloss <= 0) {
+      return child;
+    }
+    final double travel = clampDouble(-info.delta, 0, 1);
+    // The glint sweeps across the card while it flips and is gone by the
+    // time the card lands, so cards at rest show no trace of it.
+    final double strength = clampDouble(gloss, 0, 1) * math.sin(math.pi * travel);
+    final double center = -0.2 + 1.4 * travel;
+    return ShaderMask(
+      blendMode: BlendMode.srcATop,
+      shaderCallback: (Rect bounds) => _glint(bounds, center, strength),
+      child: child,
+    );
+  }
+
+  static Shader _glint(Rect bounds, double center, double strength) {
+    const double half = 0.2;
+    const Color clear = Color(0x00FFFFFF);
+    final Color light = const Color(0xFFFFFFFF)
+        .withAlpha((255 * clampDouble(strength, 0, 1)).round());
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: <Color>[clear, light, clear],
+      stops: <double>[
+        clampDouble(center - half, 0, 1),
+        clampDouble(center, 0, 1),
+        clampDouble(center + half, 0, 1),
+      ],
+    ).createShader(bounds);
+  }
+}
+
+/// The upcoming cards wait in a stack that climbs away behind the current
+/// card, each one further over, more blurred and fainter; the current card
+/// slides off to the side to show the next one, like the cards of a
+/// digital wallet.
+///
+/// The cards are made a little smaller so the whole stack fits inside the
+/// carousel. This is the digital wallet demo of the flutter_custom_carousel
+/// package.
+class WalletCarouselEffect extends CarouselEffect {
+  /// Creates a wallet stack.
+  const WalletCarouselEffect({
+    this.visibleCards = 3,
+    this.offset = const Offset(0.12, -0.12),
+    this.blur = 2.5,
+    this.fade = 0.25,
+    this.viewportFraction = 0.75,
+  });
+
+  /// How many cards show behind the current one.
+  final int visibleCards;
+
+  /// Where each card sits relative to the one in front of it, as fractions
+  /// of a card's size: `dx` along the carousel (positive is towards the next
+  /// item) and `dy` across it (negative is up).
+  final Offset offset;
+
+  /// How much more each card behind is blurred, as a blur radius in logical
+  /// pixels.
+  final double blur;
+
+  /// How much fainter each card is than the one in front of it, from the
+  /// second card back, from 0 to 1.
+  final double fade;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  int get _cards => math.max(1, visibleCards);
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  bool get blursItems => blur > 0;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => _cards + 1;
+
+  @override
+  double paintOrder(CarouselItemInfo info) =>
+      info.delta <= 0 ? 1 - info.delta : -info.delta;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final int cards = _cards;
+    if (d <= -1 || d > cards + 1) {
+      return CarouselItemTransform.hidden;
+    }
+    final CarouselLayout layout = info.layout;
+    final double width = layout.itemMainExtent;
+    final double height = layout.itemCrossExtent;
+    // Shrink the cards so the stack, front card to back card, fits in the
+    // item's box, and centre the stack in it.
+    final double fit = math.min(
+      1 / (1 + cards * offset.dx.abs()),
+      1 / (1 + cards * offset.dy.abs()),
+    );
+    final double stepX = offset.dx * fit * width;
+    final double stepY = offset.dy * fit * height;
+    final double frontX = -stepX * cards / 2;
+    final double frontY = -stepY * cards / 2;
+    if (d <= 0) {
+      // The front card slides off, staying sharp, far enough to leave the
+      // carousel.
+      return CarouselItemTransform(
+        matrix: (ItemMatrix()
+              ..scale(fit)
+              ..translate(frontX + d * (layout.slotExtent + width * 0.1), frontY))
+            .value,
+      );
+    }
+    final double depth = math.min(d, cards.toDouble());
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..scale(fit)
+            ..translate(frontX + depth * stepX, frontY + depth * stepY))
+          .value,
+      blur: math.max(0.0, blur) * depth,
+      opacity: clampDouble(1 - math.max(0.0, depth - 1) * fade, 0, 1) *
+          clampDouble(cards + 1 - d, 0, 1),
+    );
+  }
+}

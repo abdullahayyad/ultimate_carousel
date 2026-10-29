@@ -58,10 +58,12 @@ class UltimateCarousel extends StatefulWidget {
     this.aspectRatio = 16 / 9,
     this.onPageChanged,
     this.onScrolled,
+    this.onSettled,
     this.onItemTap,
     this.animateToTappedItem = false,
     this.enableDrag = true,
     this.snapping = CarouselSnapping.singlePage,
+    this.dragSpeed = 1,
     this.bounce,
     this.dragDevices,
     this.enableKeyboard = true,
@@ -72,7 +74,8 @@ class UltimateCarousel extends StatefulWidget {
     this.animationCurve = Curves.easeOutCubic,
     this.clipBehavior = Clip.hardEdge,
     this.semanticLabel,
-  })  : itemCount = children.length,
+  })  : assert(dragSpeed > 0),
+        itemCount = children.length,
         itemBuilder = _builderFor(children);
 
   /// Creates a carousel that builds its items on demand.
@@ -97,10 +100,12 @@ class UltimateCarousel extends StatefulWidget {
     this.aspectRatio = 16 / 9,
     this.onPageChanged,
     this.onScrolled,
+    this.onSettled,
     this.onItemTap,
     this.animateToTappedItem = false,
     this.enableDrag = true,
     this.snapping = CarouselSnapping.singlePage,
+    this.dragSpeed = 1,
     this.bounce,
     this.dragDevices,
     this.enableKeyboard = true,
@@ -111,7 +116,8 @@ class UltimateCarousel extends StatefulWidget {
     this.animationCurve = Curves.easeOutCubic,
     this.clipBehavior = Clip.hardEdge,
     this.semanticLabel,
-  }) : assert(itemCount >= 0);
+  })  : assert(itemCount >= 0),
+        assert(dragSpeed > 0);
 
   static IndexedWidgetBuilder _builderFor(List<Widget> children) {
     return (BuildContext context, int index) => children[index];
@@ -175,6 +181,14 @@ class UltimateCarousel extends StatefulWidget {
   /// 0 and the item count (see `UltimateCarouselController.realPage`).
   final ValueChanged<double>? onScrolled;
 
+  /// Called when the carousel comes to rest, with the index of the item it
+  /// stopped on.
+  ///
+  /// It follows every drag, fling, autoplay step and controller move once
+  /// the motion has ended, so it suits work that should wait until the user
+  /// has settled on an item, such as loading the item's details.
+  final ValueChanged<int>? onSettled;
+
   /// Called when the user taps an item, with the item's index.
   final ValueChanged<int>? onItemTap;
 
@@ -186,6 +200,12 @@ class UltimateCarousel extends StatefulWidget {
 
   /// How the carousel decides where to stop after a drag.
   final CarouselSnapping snapping;
+
+  /// How far a drag moves the carousel compared with the finger.
+  ///
+  /// 1 (the default) follows the finger; 2 moves the carousel twice as far
+  /// for the same drag and 0.5 half as far. Flings follow suit.
+  final double dragSpeed;
 
   /// Whether a carousel that does not loop stretches past its first and last
   /// item. `null` uses the platform's habit: on for iOS and macOS, off
@@ -277,6 +297,9 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   double? _animationTarget;
   CarouselPageChangeReason _reason = CarouselPageChangeReason.user;
   int _reportedIndex = 0;
+  // Whether the carousel has moved since it last came to rest.
+  bool _moved = false;
+  double _lastPosition = 0;
 
   double _wheelDelta = 0;
   bool _wheelLocked = false;
@@ -339,6 +362,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       vsync: this,
       value: initial.toDouble(),
     )..addListener(_handlePositionChanged);
+    _lastPosition = initial.toDouble();
     if (widget.controller == null) {
       _ownController = UltimateCarouselController();
     }
@@ -426,6 +450,10 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   // Position reporting
 
   void _handlePositionChanged() {
+    if (_page != _lastPosition) {
+      _lastPosition = _page;
+      _moved = true;
+    }
     final int index = _currentIndex;
     final bool changed = index != _reportedIndex;
     if (changed) {
@@ -574,6 +602,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
         _scheduleAutoPlay();
       case CarouselAutoPlayEnd.stop:
         _autoPlayRunning = false;
+        _handleSettled();
     }
   }
 
@@ -593,6 +622,11 @@ class _UltimateCarouselState extends State<UltimateCarousel>
       return;
     }
     _animationTarget = null;
+    if (_moved) {
+      _moved = false;
+      final int index = _currentIndex;
+      _runOutsideBuild(() => widget.onSettled?.call(index));
+    }
     _scheduleAutoPlay();
   }
 
@@ -850,7 +884,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
   void _handleDragUpdate(DragUpdateDetails details) {
     final double delta = details.primaryDelta ?? 0;
     final double sign = _reversed ? -1 : 1;
-    _rawDragPage -= delta / _dragExtent * sign;
+    _rawDragPage -= delta / _dragExtent * sign * widget.dragSpeed;
     if (!_loop && !_bounces && _count > 0) {
       _rawDragPage = clampDouble(_rawDragPage, 0, _lastPage);
     }
@@ -862,7 +896,7 @@ class _UltimateCarouselState extends State<UltimateCarousel>
     _dragging = false;
     final double sign = _reversed ? -1 : 1;
     final double velocity =
-        -(details.primaryVelocity ?? 0) / _dragExtent * sign;
+        -(details.primaryVelocity ?? 0) / _dragExtent * sign * widget.dragSpeed;
     _settle(velocity);
   }
 

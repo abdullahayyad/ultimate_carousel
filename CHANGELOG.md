@@ -1,3 +1,18 @@
+## 0.2.0
+
+* `CarouselEffect.builder` wraps every item on show in widgets of your own,
+  with the item's `ratio` among the items on show, `itemsBefore`,
+  `itemsAfter` and a `CarouselDepthOrder`. Effects builders written for
+  flutter_custom_carousel work unchanged.
+* `UltimateCarousel.dragSpeed` scales how far a drag moves the carousel.
+* `UltimateCarousel.onSettled` reports the item the carousel comes to rest
+  on.
+* Three new transitions, from the flutter_custom_carousel demos, for 54 in
+  all: `deal` (a pile whose top card flips off with a glint), `wallet` (a
+  stack that climbs away, blurred) and `crate` (flipping through records).
+* `ring` gains `blur` and `fade` for a depth of field, which makes the
+  orbiting menu of the flutter_custom_carousel demos.
+
 ## 0.1.0
 
 * First release.

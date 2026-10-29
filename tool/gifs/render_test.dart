@@ -43,11 +43,24 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
     'ring_tilted',
     CarouselEffect.ring(faceViewer: true, tilt: 0.45, viewportFraction: 0.42),
   ),
+  (
+    'ring_orbit',
+    CarouselEffect.ring(
+      itemsOnRing: 7,
+      faceViewer: true,
+      tilt: 0.5,
+      perspective: 0.003,
+      blur: 5,
+      fade: 0.5,
+      viewportFraction: 0.32,
+    ),
+  ),
   ('wheel', CarouselEffect.wheel()),
   ('cylinder', CarouselEffect.cylinder()),
   ('helix', CarouselEffect.helix()),
   ('page_turn', CarouselEffect.pageTurn()),
   ('tunnel', CarouselEffect.tunnel()),
+  ('crate', CarouselEffect.crate()),
   ('material', CarouselEffect.material()),
   ('material_hero', CarouselEffect.material(weights: <int>[1, 7, 1])),
   ('deck', CarouselEffect.deck()),
@@ -57,6 +70,8 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('fan', CarouselEffect.fan()),
   ('arc', CarouselEffect.arc()),
   ('scatter', CarouselEffect.scatter()),
+  ('deal', CarouselEffect.deal()),
+  ('wallet', CarouselEffect.wallet()),
   ('circular_reveal', CarouselEffect.circularReveal()),
   ('wipe', CarouselEffect.wipe()),
   ('curtain', CarouselEffect.curtain()),
@@ -73,13 +88,33 @@ const List<(String, CarouselEffect)> gifEffects = <(String, CarouselEffect)>[
   ('creative_tumble', CreativeCarouselEffect.tumble()),
   ('creative_spin', CreativeCarouselEffect.spin()),
   ('creative_door', CreativeCarouselEffect.door()),
+  (
+    'builder_wave',
+    CarouselEffect.builder(builder: _waveBuilder, viewportFraction: 0.45),
+  ),
 ];
+
+/// The README's builder example: items spread out to the sides and dip
+/// down, shrinking and fading as they go.
+Widget _waveBuilder(int index, double ratio, Widget child) {
+  return FractionalTranslation(
+    translation: Offset(ratio * 1.6, ratio.abs() * 0.15),
+    child: Transform.scale(
+      scale: 1 - ratio.abs() * 0.4,
+      child: Opacity(opacity: 1 - ratio.abs() * 0.6, child: child),
+    ),
+  );
+}
+
+/// Effects shown as a vertical carousel of square cards.
+const Set<String> _verticalTiles = <String>{'crate'};
 
 /// Room around the carousel in a tile, for effects that need more than the
 /// default.
 const Map<String, EdgeInsets> _tilePadding = <String, EdgeInsets>{
   // The far side of a tilted ring rises above the items.
   'ring_tilted': EdgeInsets.fromLTRB(0, 84, 0, 16),
+  'ring_orbit': EdgeInsets.fromLTRB(0, 84, 0, 16),
 };
 
 const Color _dot = Color(0x55FFFFFF);
@@ -321,7 +356,15 @@ Widget _tile(
         itemCount: 6,
         enableKeyboard: false,
         clipBehavior: Clip.none,
-        itemBuilder: (BuildContext context, int index) => _Card(index),
+        scrollDirection: _verticalTiles.contains(name)
+            ? Axis.vertical
+            : Axis.horizontal,
+        itemBuilder: (BuildContext context, int index) =>
+            _verticalTiles.contains(name)
+                ? Center(
+                    child: AspectRatio(aspectRatio: 1, child: _Card(index)),
+                  )
+                : _Card(index),
       ),
     ),
   );

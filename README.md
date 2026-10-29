@@ -5,7 +5,7 @@
 [![Live demo](https://img.shields.io/badge/demo-try%20it%20live-7F5AF0)](https://abdullahayyad.github.io/ultimate_carousel/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/abdullahayyad/ultimate_carousel/blob/main/LICENSE)
 
-**Every Flutter carousel transition in one package.** 51 transitions and 15
+**Every Flutter carousel transition in one package.** 54 transitions and 15
 animated page indicators behind a single widget, with no dependencies besides
 Flutter.
 
@@ -26,7 +26,8 @@ they offer was collected and written again from scratch behind one API:
   trackpad and screen readers.
 - **Animated indicators** that follow the carousel: worm, expanding dots,
   jumping dot, drop, scrolling dots and more.
-- **Your own effects** in a few lines with `CarouselEffect.custom`.
+- **Your own effects** in a few lines with `CarouselEffect.custom`, or
+  from any widgets with `CarouselEffect.builder`.
 - **Pure Flutter**: no dependencies; works on Android, iOS, web, Windows,
   macOS and Linux.
 
@@ -34,7 +35,7 @@ they offer was collected and written again from scratch behind one API:
 
 ```yaml
 dependencies:
-  ultimate_carousel: ^0.1.0
+  ultimate_carousel: ^0.2.0
 ```
 
 ## Quick start
@@ -98,11 +99,14 @@ where the next item waits still underneath.
 | ![coverflow](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/coverflow.gif)<br>`CarouselEffect.coverflow()` | ![tablet](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/tablet.gif)<br>`CarouselEffect.tablet()` | ![ring](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/ring.gif)<br>`CarouselEffect.ring(itemsOnRing: 6)` |
 | ![tilted ring](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/ring_tilted.gif)<br>`CarouselEffect.ring(faceViewer: true, tilt: 0.45)` | ![wheel](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/wheel.gif)<br>`CarouselEffect.wheel()` | ![cylinder](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/cylinder.gif)<br>`CarouselEffect.cylinder()` |
 | ![helix](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/helix.gif)<br>`CarouselEffect.helix()` | ![page turn](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/page_turn.gif)<br>`CarouselEffect.pageTurn()` | ![tunnel](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/tunnel.gif)<br>`CarouselEffect.tunnel()` |
+| ![crate](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/crate.gif)<br>`CarouselEffect.crate()` | ![orbit](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/ring_orbit.gif)<br>`CarouselEffect.ring(faceViewer: true, tilt: 0.5, blur: 5, fade: 0.5)` | |
 
 Also: `flip(vertical: true)` and `ring(showBackItems: true)`. A tilted ring
-rises above its items, so give it room: the animation above uses
-`viewportFraction: 0.42`, `clipBehavior: Clip.none` and space above the
-carousel.
+rises above its items, so give it room: the animations above use
+`viewportFraction: 0.42` (0.32 for the orbit), `clipBehavior: Clip.none` and
+space above the carousel. `blur` and `fade` give the ring a depth of field;
+the orbit also sets `itemsOnRing: 7` and `perspective: 0.003`. The crate is
+made for vertical carousels, like the one above.
 
 ### Material 3
 
@@ -123,12 +127,14 @@ slide with `alignment: CarouselAlignment.start` and a `viewportFraction` below
 |:-:|:-:|:-:|
 | ![deck](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/deck.gif)<br>`CarouselEffect.deck()` | ![tinder](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/tinder.gif)<br>`CarouselEffect.tinder()` | ![fan](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/fan.gif)<br>`CarouselEffect.fan()` |
 | ![arc](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/arc.gif)<br>`CarouselEffect.arc()` | ![scatter](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/scatter.gif)<br>`CarouselEffect.scatter()` | ![layered](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/layered.gif)<br>`CarouselEffect.layered()` |
-| ![expanding cards](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/expanding_cards.gif)<br>`CarouselEffect.expandingCards()` | | |
+| ![expanding cards](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/expanding_cards.gif)<br>`CarouselEffect.expandingCards()` | ![deal](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/deal.gif)<br>`CarouselEffect.deal()` | ![wallet](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/wallet.gif)<br>`CarouselEffect.wallet()` |
 
 Also: `arc(upward: false)` for a rainbow and `arc(tilt: false)` to keep the
 cards upright. Expanding cards show every item at once, so they suit a
 handful of items; tap a narrow card to open it with `animateToTappedItem`. `layered(fadeColor: …)` fades the neighbours towards your
-background color instead of white.
+background color instead of white. The deal's glint draws every card through
+a shader mask; `deal(gloss: 0)` turns it off. `wallet(offset: Offset(0, -0.15))`
+stacks the cards straight up.
 
 ### Reveals
 
@@ -232,9 +238,11 @@ carousel. To drive an indicator yourself, for example from a `PageView`, use
 | `height`, `aspectRatio` | none, 16:9 | The size when the parent does not set one. |
 | `initialPage` | `0` | The first item shown. |
 | `snapping` | single page | `multiPage` for long flings, `none` for free gliding. |
+| `dragSpeed` | `1` | How far a drag moves the carousel compared with the finger. |
 | `bounce` | platform | Stretch past the ends of a carousel that does not loop. |
 | `onPageChanged` | | `(index, reason)` with `user`, `autoPlay` or `controller`. |
 | `onScrolled` | | The position every frame, for custom animations. |
+| `onSettled` | | `(index)` once the carousel comes to rest after a drag, fling, autoplay step or controller move. |
 | `onItemTap`, `animateToTappedItem` | | Tap callbacks; tapping a side item can bring it to the center. |
 | `enableDrag`, `dragDevices` | on, all | Who can drag the carousel, mouse included. |
 | `enableKeyboard`, `focusNode`, `autofocus` | on | Arrow keys, Page Up/Down, Home and End. |
@@ -314,6 +322,61 @@ black. For full control, subclass `CarouselEffect` and override
 `paintOrder`, `itemsPerSide` or `decorate`. To make a new reveal, subclass
 `RevealCarouselEffect` and return the visible shape from `revealPath`.
 
+## Build a look from widgets
+
+![Items spreading out to the sides, made with the builder effect](https://raw.githubusercontent.com/abdullahayyad/ultimate_carousel/readme-assets/builder_wave.gif)
+
+`CarouselEffect.builder` hands every item on show to a function that wraps it
+in any widgets you like. The function gets the item's index, its `ratio` and
+the item. The ratio is 0 for the current item, -1 for the furthest item shown
+before it and 1 for the furthest item shown after it, and it changes smoothly
+as the carousel moves. Every item starts at the current item's place:
+
+```dart
+UltimateCarousel(
+  effect: CarouselEffect.builder(
+    itemsBefore: 2,
+    itemsAfter: 2,
+    viewportFraction: 0.45,
+    builder: (index, ratio, child) => FractionalTranslation(
+      translation: Offset(ratio * 1.6, ratio.abs() * 0.15),
+      child: Transform.scale(
+        scale: 1 - ratio.abs() * 0.4,
+        child: Opacity(opacity: 1 - ratio.abs() * 0.6, child: child),
+      ),
+    ),
+  ),
+  children: slides,
+)
+```
+
+`depthOrder` picks the items drawn on top: `selectedInFront` (the default),
+`forward` or `reverse`. The builder works in screen space, so it decides where
+items go; `scrollDirection`, `reverse` and right-to-left text only change which
+way the user swipes.
+
+This is the API of
+[flutter_custom_carousel](https://pub.dev/packages/flutter_custom_carousel),
+so its effects builders work here unchanged. Its `itemCountBefore` and
+`itemCountAfter` are `itemsBefore` and `itemsAfter`, `scrollSpeed` is
+`dragSpeed`, `onSettledItemChanged` is `onSettled` and `tapToSelect` is
+`animateToTappedItem`. To use
+[flutter_animate](https://pub.dev/packages/flutter_animate) effects, map the
+ratio onto the animation:
+
+```dart
+final List<Effect> effects = EffectList().moveY(begin: -250, end: 250);
+
+CarouselEffect.builder(
+  builder: (index, ratio, child) => Animate(
+    effects: effects,
+    value: (ratio + 1) / 2,
+    autoPlay: false,
+    child: child,
+  ),
+)
+```
+
 ## Accessibility
 
 - Screen readers hear "3 / 10" and can swipe through items; only the current
@@ -350,6 +413,7 @@ ideas.
 | [shader_transitions](https://pub.dev/packages/shader_transitions), [intro_views_flutter](https://pub.dev/packages/intro_views_flutter) | clock, blocks and circle reveals | MIT |
 | [Swiper](https://swiperjs.com) | creative effect and its demo looks; slicer, shutters and expo sliders | MIT |
 | [Splide](https://splidejs.com), [Embla Carousel](https://www.embla-carousel.com) | auto-scroll marquee | MIT |
+| [flutter_custom_carousel](https://pub.dev/packages/flutter_custom_carousel) | builder effect, items before and after, depth order, drag speed, settled callback; deal, wallet, crate and orbit looks | BSD-3-Clause |
 | Flutter's `CarouselView` and `ListWheelScrollView` | Material 3 layouts, wheel | BSD-3-Clause |
 
 ## License

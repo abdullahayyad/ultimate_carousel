@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../item.dart';
 import 'basic_effects.dart';
+import 'builder_effect.dart';
 import 'card_effects.dart';
 import 'creative_effect.dart';
 import 'custom_effect.dart';
@@ -16,7 +17,8 @@ import 'three_d_effects.dart';
 ///
 /// Pick one of the built-in effects with the named constructors, for example
 /// `const CarouselEffect.cube()`, or write your own with
-/// [CarouselEffect.custom] or by subclassing.
+/// [CarouselEffect.custom], from widgets with [CarouselEffect.builder], or by
+/// subclassing.
 ///
 /// An effect decides how every item is drawn for its position relative to
 /// the current page. The carousel asks it on every frame while it moves, so
@@ -159,6 +161,9 @@ abstract class CarouselEffect {
   }) = TabletCarouselEffect;
 
   /// Items stand around a turning ring.
+  ///
+  /// With `faceViewer`, a `tilt` and some `blur` and `fade`, items orbit
+  /// like the circular menu of flutter_custom_carousel.
   const factory CarouselEffect.ring({
     int? itemsOnRing,
     double? radius,
@@ -167,6 +172,8 @@ abstract class CarouselEffect {
     double tilt,
     double perspective,
     double shade,
+    double blur,
+    double fade,
     double viewportFraction,
   }) = RingCarouselEffect;
 
@@ -206,6 +213,18 @@ abstract class CarouselEffect {
     int visibleItems,
     double rise,
   }) = TunnelCarouselEffect;
+
+  /// Items stand in a row like records in a crate: the ones ahead lie
+  /// tipped towards the viewer and the ones passed lean back. Made for
+  /// vertical carousels.
+  const factory CarouselEffect.crate({
+    int visibleItems,
+    double gap,
+    double lean,
+    double perspective,
+    double shade,
+    double viewportFraction,
+  }) = CrateCarouselEffect;
 
   // ---------------------------------------------------------------------------
   // Material 3
@@ -287,6 +306,30 @@ abstract class CarouselEffect {
     int visibleCards,
     double viewportFraction,
   }) = ScatterCarouselEffect;
+
+  /// A neat pile of cards whose top card flips over with a glint as it is
+  /// dealt off to the side; the cards below lie askew and in shadow.
+  const factory CarouselEffect.deal({
+    int visibleCards,
+    double tilt,
+    double shade,
+    double flipAngle,
+    double distance,
+    double gloss,
+    double perspective,
+    double viewportFraction,
+  }) = DealCarouselEffect;
+
+  /// The upcoming cards wait in a stack that climbs away behind the current
+  /// card, more blurred and fainter the further back they are, like the
+  /// cards of a digital wallet.
+  const factory CarouselEffect.wallet({
+    int visibleCards,
+    Offset offset,
+    double blur,
+    double fade,
+    double viewportFraction,
+  }) = WalletCarouselEffect;
 
   // ---------------------------------------------------------------------------
   // Reveals
@@ -376,6 +419,36 @@ abstract class CarouselEffect {
     int? itemsPerSide,
     bool shadesItems,
   }) = CustomCarouselEffect;
+
+  /// An effect that wraps every item in widgets of your own, for looks a
+  /// transform cannot express: any `Transform`, `Opacity`, `ImageFiltered`
+  /// or `ShaderMask`, or the effects of an animation package.
+  ///
+  /// [builder] gets each item's index, its `ratio` (0 for the current item,
+  /// -1 for the furthest one shown before it and 1 for the furthest one
+  /// shown after it) and the item, and returns the item wrapped up. Every
+  /// item starts at the current item's place:
+  ///
+  /// ```dart
+  /// CarouselEffect.builder(
+  ///   itemsBefore: 2,
+  ///   itemsAfter: 2,
+  ///   builder: (index, ratio, child) => Transform.translate(
+  ///     offset: Offset(0, ratio * 250),
+  ///     child: child,
+  ///   ),
+  /// )
+  /// ```
+  ///
+  /// Builders written for the flutter_custom_carousel package work here
+  /// unchanged.
+  const factory CarouselEffect.builder({
+    required CarouselEffectsBuilder builder,
+    int itemsBefore,
+    int itemsAfter,
+    CarouselDepthOrder depthOrder,
+    double viewportFraction,
+  }) = BuilderCarouselEffect;
 
   // ---------------------------------------------------------------------------
   // The effect API

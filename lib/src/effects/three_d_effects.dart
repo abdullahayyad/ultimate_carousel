@@ -192,6 +192,8 @@ class RingCarouselEffect extends CarouselEffect {
     this.tilt = 0,
     this.perspective = 0.0012,
     this.shade = 0.5,
+    this.blur = 0,
+    this.fade = 0,
     this.viewportFraction = 0.5,
   });
 
@@ -225,6 +227,15 @@ class RingCarouselEffect extends CarouselEffect {
   /// How dark the items at the back are, from 0 to 1.
   final double shade;
 
+  /// How blurred the items at the back are, as a blur radius in logical
+  /// pixels, for a depth of field look. Items sharpen as they come round to
+  /// the front.
+  final double blur;
+
+  /// How faint the items at the back are, from 0 (not at all) to 1
+  /// (invisible).
+  final double fade;
+
   /// The default fraction of the carousel one item takes.
   final double viewportFraction;
 
@@ -236,6 +247,9 @@ class RingCarouselEffect extends CarouselEffect {
 
   @override
   bool get shadesItems => shade > 0;
+
+  @override
+  bool get blursItems => blur > 0;
 
   int _count(CarouselLayout layout) =>
       math.max(3, itemsOnRing ?? layout.itemCount);
@@ -270,9 +284,13 @@ class RingCarouselEffect extends CarouselEffect {
     matrix
       ..translate(r * sin, -back * math.sin(tilt), back * math.cos(tilt))
       ..perspective(perspective);
+    // 0 at the front of the ring, 1 at the back.
+    final double away = (1 - cos) / 2;
     return CarouselItemTransform(
       matrix: matrix.value,
-      shade: clampDouble(shade, 0, 1) * (1 - cos) / 2,
+      shade: clampDouble(shade, 0, 1) * away,
+      blur: math.max(0.0, blur) * away,
+      opacity: 1 - clampDouble(fade, 0, 1) * away,
     );
   }
 }
@@ -602,6 +620,100 @@ class TabletCarouselEffect extends CarouselEffect {
             ..perspective(perspective))
           .value,
       shade: clampDouble(shade, 0, 1) * c.abs(),
+    );
+  }
+}
+
+/// Items stand in a row like records in a crate, seen from the front. The
+/// items ahead lie tipped towards the viewer and stand up one by one as
+/// they arrive; the items already passed lean back into the crate, smaller
+/// and darker.
+///
+/// It is made for vertical carousels, where flipping through it looks like
+/// digging through records. This is the record box demo of the
+/// flutter_custom_carousel package.
+class CrateCarouselEffect extends CarouselEffect {
+  /// Creates a crate.
+  const CrateCarouselEffect({
+    this.visibleItems = 4,
+    this.gap = 0.32,
+    this.lean = 0.3,
+    this.perspective = 0.0025,
+    this.shade = 0.6,
+    this.viewportFraction = 0.5,
+  });
+
+  /// How many items show on each side of the current one.
+  final int visibleItems;
+
+  /// How far apart the items ahead stand, as a fraction of an item's
+  /// length. The items behind stand closer together.
+  final double gap;
+
+  /// How far the items behind lean back, in radians.
+  final double lean;
+
+  /// The strength of the 3D perspective.
+  final double perspective;
+
+  /// How dark the furthest item behind is, from 0 to 1.
+  final double shade;
+
+  /// The default fraction of the carousel one item takes.
+  final double viewportFraction;
+
+  int get _visible => math.max(1, visibleItems);
+
+  @override
+  double get defaultViewportFraction => viewportFraction;
+
+  @override
+  bool get shadesItems => shade > 0;
+
+  @override
+  int? itemsPerSide(CarouselLayout layout) => _visible + 1;
+
+  // Items move a fraction of their length per step, so a drag of the same
+  // length moves one step.
+  @override
+  double dragExtent(CarouselLayout layout) =>
+      math.max(layout.itemMainExtent * math.max(gap, 0.05), 1.0);
+
+  // The items ahead are nearer the viewer.
+  @override
+  double paintOrder(CarouselItemInfo info) => info.delta;
+
+  @override
+  CarouselItemTransform transform(CarouselItemInfo info) {
+    final double d = info.delta;
+    final double range = _visible + 0.5;
+    if (d.abs() > range) {
+      return CarouselItemTransform.hidden;
+    }
+    final double length = info.layout.itemMainExtent;
+    if (d >= 0) {
+      // Ahead: tipped towards the viewer, more the further ahead, until the
+      // last one lies flat.
+      final double ahead = d / range;
+      return CarouselItemTransform(
+        matrix: (ItemMatrix()
+              ..rotateY(-math.pi / 2 * ahead)
+              ..translate(d * gap * length)
+              ..perspective(perspective))
+            .value,
+      );
+    }
+    // Behind: leaning back, closer together, smaller and darker.
+    final double behind = -d / range;
+    return CarouselItemTransform(
+      matrix: (ItemMatrix()
+            ..rotateY(lean * math.min(1.0, -d))
+            ..scale(1 - 0.3 * behind)
+            ..translate(d * gap * 0.4 * length)
+            ..perspective(perspective))
+          .value,
+      shade: clampDouble(shade, 0, 1) * behind,
+      opacity: clampDouble(range + d, 0, 1),
     );
   }
 }

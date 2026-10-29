@@ -16,6 +16,7 @@ library;
 
 export 'src/carousel.dart';
 export 'src/effects/basic_effects.dart';
+export 'src/effects/builder_effect.dart';
 export 'src/effects/card_effects.dart';
 export 'src/effects/creative_effect.dart';
 export 'src/effects/custom_effect.dart';

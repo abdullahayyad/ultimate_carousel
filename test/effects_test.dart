@@ -3,6 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ultimate_carousel/ultimate_carousel.dart';
 
 /// Every built-in effect, with a name for test descriptions.
+/// Slides items apart, the way builders for flutter_custom_carousel do.
+Widget _slideBuilder(int index, double ratio, Widget child) {
+  return FractionalTranslation(
+    translation: Offset(ratio * 2.5, 0),
+    child: child,
+  );
+}
+
 const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('slide', CarouselEffect.slide()),
   ('fade', CarouselEffect.fade()),
@@ -93,6 +101,25 @@ const List<(String, CarouselEffect)> allEffects = <(String, CarouselEffect)>[
   ('arc', CarouselEffect.arc()),
   ('arc down, upright', CarouselEffect.arc(upward: false, tilt: false)),
   ('scatter', CarouselEffect.scatter()),
+  ('deal', CarouselEffect.deal()),
+  ('deal without gloss', CarouselEffect.deal(gloss: 0)),
+  ('wallet', CarouselEffect.wallet()),
+  ('wallet, straight up', CarouselEffect.wallet(offset: Offset(0, -0.15))),
+  ('crate', CarouselEffect.crate()),
+  (
+    'ring orbit',
+    CarouselEffect.ring(faceViewer: true, tilt: 0.5, blur: 6, fade: 0.6),
+  ),
+  ('builder', CarouselEffect.builder(builder: _slideBuilder)),
+  (
+    'builder, one-sided',
+    CarouselEffect.builder(
+      builder: _slideBuilder,
+      itemsBefore: 0,
+      itemsAfter: 3,
+      depthOrder: CarouselDepthOrder.reverse,
+    ),
+  ),
   ('circular reveal', CarouselEffect.circularReveal()),
   ('wipe', CarouselEffect.wipe()),
   ('curtain', CarouselEffect.curtain()),
@@ -447,6 +474,228 @@ void main() {
     expect(panel(0, 1).$2, lessThan(panel(1, 1).$2));
   });
 
+  test('the builder hands items their ratio among the items on show', () {
+    const BuilderCarouselEffect effect = BuilderCarouselEffect(
+      builder: _slideBuilder,
+      itemsBefore: 1,
+      itemsAfter: 3,
+    );
+    double ratio(double delta) => effect.ratioOf(_info(effect, delta));
+
+    expect(ratio(0), 0);
+    expect(ratio(-1.5), closeTo(-1, 1e-9));
+    expect(ratio(-0.75), closeTo(-0.5, 1e-9));
+    expect(ratio(3.5), closeTo(1, 1e-9));
+    expect(ratio(1.75), closeTo(0.5, 1e-9));
+    // Items beyond the ones on show are not drawn.
+    expect(effect.transform(_info(effect, -1.6)).visible, isFalse);
+    expect(effect.transform(_info(effect, 3.6)).visible, isFalse);
+    expect(effect.transform(_info(effect, 3.4)).visible, isTrue);
+  });
+
+  test('the builder stacks items in the chosen depth order', () {
+    double order(CarouselDepthOrder depthOrder, double delta) {
+      final BuilderCarouselEffect effect = BuilderCarouselEffect(
+        builder: _slideBuilder,
+        depthOrder: depthOrder,
+      );
+      return effect.paintOrder(_info(effect, delta));
+    }
+
+    expect(
+      order(CarouselDepthOrder.forward, 1),
+      greaterThan(order(CarouselDepthOrder.forward, -1)),
+    );
+    expect(
+      order(CarouselDepthOrder.reverse, -1),
+      greaterThan(order(CarouselDepthOrder.reverse, 1)),
+    );
+    expect(
+      order(CarouselDepthOrder.selectedInFront, 0),
+      greaterThan(order(CarouselDepthOrder.selectedInFront, 1)),
+    );
+    expect(
+      order(CarouselDepthOrder.selectedInFront, 0),
+      greaterThan(order(CarouselDepthOrder.selectedInFront, -1)),
+    );
+  });
+
+  testWidgets('the builder wraps every item on show', (
+    WidgetTester tester,
+  ) async {
+    final Map<int, double> ratios = <int, double>{};
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 400,
+            height: 200,
+            child: UltimateCarousel(
+              effect: CarouselEffect.builder(
+                itemsBefore: 1,
+                itemsAfter: 2,
+                builder: (int index, double ratio, Widget child) {
+                  ratios[index] = ratio;
+                  return Opacity(opacity: 1 - ratio.abs() / 2, child: child);
+                },
+              ),
+              children: <Widget>[
+                for (int i = 0; i < 6; i++) Text('item $i'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(ratios[0], 0);
+    expect(ratios[1], closeTo(1 / 2.5, 1e-9));
+    expect(ratios[2], closeTo(2 / 2.5, 1e-9));
+    // Items on their way out get a ratio in range too.
+    for (final double ratio in ratios.values) {
+      expect(ratio, inInclusiveRange(-1, 1));
+    }
+  });
+
+  test('deal flips the top card off and tilts the pile beneath', () {
+    const DealCarouselEffect effect = DealCarouselEffect();
+    final Size size = _layout(effect).itemSize;
+    final CarouselItemTransform leaving = effect.transform(_info(effect, -0.5));
+    final List<Offset> corners = _corners(leaving, size);
+    // The dealt card heads off towards the previous side...
+    expect(
+      MatrixUtils.transformPoint(leaving.matrix!, Offset.zero).dx,
+      lessThan(-100),
+    );
+    // ...turning its trailing edge up towards the viewer, so that edge
+    // looks taller.
+    final double leading = (corners[3] - corners[0]).distance;
+    final double trailing = (corners[2] - corners[1]).distance;
+    expect(trailing, greaterThan(leading + 1));
+    // The cards beneath are turned and darker the deeper they lie.
+    final CarouselItemTransform second = effect.transform(_info(effect, 1));
+    final CarouselItemTransform third = effect.transform(_info(effect, 2));
+    expect(second.shade, greaterThan(0));
+    expect(third.shade, greaterThan(second.shade));
+    final List<Offset> secondCorners = _corners(second, size);
+    expect(
+      (secondCorners[1].dy - secondCorners[0].dy).abs(),
+      greaterThan(1),
+    );
+  });
+
+  testWidgets('deal draws its glint only when gloss is on', (
+    WidgetTester tester,
+  ) async {
+    Future<int> masks(double gloss) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 400,
+              height: 200,
+              child: UltimateCarousel(
+                effect: CarouselEffect.deal(gloss: gloss),
+                children: <Widget>[
+                  for (int i = 0; i < 4; i++)
+                    const ColoredBox(color: Color(0xFF3F51B5)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      return tester.widgetList(find.byType(ShaderMask)).length;
+    }
+
+    expect(await masks(0.5), greaterThan(0));
+    expect(await masks(0), 0);
+  });
+
+  test('the wallet stack climbs away behind the current card', () {
+    const WalletCarouselEffect effect = WalletCarouselEffect();
+    final CarouselLayout layout = _layout(effect);
+    Offset center(double delta) => MatrixUtils.transformPoint(
+          effect.transform(_info(effect, delta)).matrix!,
+          Offset.zero,
+        );
+
+    // Each card behind sits further over, higher up and more blurred.
+    expect(center(1).dx, greaterThan(center(0).dx));
+    expect(center(1).dy, lessThan(center(0).dy));
+    expect(center(2).dy, lessThan(center(1).dy));
+    expect(effect.transform(_info(effect, 0)).blur, 0);
+    expect(
+      effect.transform(_info(effect, 2)).blur,
+      greaterThan(effect.transform(_info(effect, 1)).blur),
+    );
+    // The whole stack fits in the item's box.
+    for (double delta = 0; delta <= 3; delta++) {
+      for (final Offset corner in _corners(
+        effect.transform(_info(effect, delta)),
+        layout.itemSize,
+      )) {
+        expect(
+          corner.dx.abs(),
+          lessThanOrEqualTo(layout.itemSize.width / 2 + 1e-6),
+        );
+        expect(
+          corner.dy.abs(),
+          lessThanOrEqualTo(layout.itemSize.height / 2 + 1e-6),
+        );
+      }
+    }
+    // The front card slides out of the carousel.
+    expect(center(-1).dx, lessThan(-layout.viewportSize.width / 2));
+  });
+
+  test('the crate tips the items ahead and leans the ones behind back', () {
+    const CrateCarouselEffect effect = CrateCarouselEffect();
+    final Size size = _layout(effect).itemSize;
+    List<Offset> corners(double delta) =>
+        _corners(effect.transform(_info(effect, delta)), size);
+    double width(double delta) => corners(delta)[1].dx - corners(delta)[0].dx;
+
+    // Items ahead are tipped further the further ahead they are, with their
+    // leading edge towards the viewer.
+    expect(width(1), lessThan(width(0)));
+    expect(width(3), lessThan(width(1)));
+    final List<Offset> ahead = corners(2);
+    expect(
+      (ahead[3] - ahead[0]).distance,
+      greaterThan((ahead[2] - ahead[1]).distance),
+    );
+    // Items behind are smaller and darker the further back they are.
+    expect(
+      effect.transform(_info(effect, -2)).shade,
+      greaterThan(effect.transform(_info(effect, -1)).shade),
+    );
+    expect(width(-2), lessThan(width(0)));
+    // The items ahead are drawn over the current one.
+    expect(
+      effect.paintOrder(_info(effect, 1)),
+      greaterThan(effect.paintOrder(_info(effect, 0))),
+    );
+  });
+
+  test('ring blur and fade grow towards the back of the ring', () {
+    const RingCarouselEffect effect = RingCarouselEffect(
+      itemsOnRing: 8,
+      faceViewer: true,
+      blur: 6,
+      fade: 0.5,
+    );
+    expect(effect.blursItems, isTrue);
+    final CarouselItemTransform front = effect.transform(_info(effect, 0));
+    final CarouselItemTransform side = effect.transform(_info(effect, 2));
+    final CarouselItemTransform back = effect.transform(_info(effect, 4));
+    expect(front.blur, 0);
+    expect(front.opacity, 1);
+    expect(side.blur, closeTo(3, 1e-9));
+    expect(side.opacity, closeTo(0.75, 1e-9));
+    expect(back.blur, closeTo(6, 1e-9));
+    expect(back.opacity, closeTo(0.5, 1e-9));
+  });
+
   test('expo turns neighbours grey and moves their content', () {
     const ExpoCarouselEffect effect = ExpoCarouselEffect(parallax: 0.2);
     expect(effect.grayscalesItems, isTrue);
@@ -572,9 +821,10 @@ void main() {
     group(name, () {
       test('draws the current item untouched', () {
         if (effect is MaterialCarouselEffect ||
-            effect is ExpandingCardsCarouselEffect) {
-          // Material layouts place items from the leading edge themselves;
-          // see the dedicated test below.
+            effect is ExpandingCardsCarouselEffect ||
+            effect is WalletCarouselEffect) {
+          // These layouts size and place even the current item themselves;
+          // see their dedicated tests.
           return;
         }
         final CarouselItemInfo info = _info(effect, 0);
